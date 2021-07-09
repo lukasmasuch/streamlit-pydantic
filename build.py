@@ -4,7 +4,7 @@ from universal_build import build_utils
 from universal_build.helpers import build_python
 
 # Project specific configuration
-MAIN_PACKAGE = "streamlit-pydantic"
+MAIN_PACKAGE = "streamlit_pydantic"
 GITHUB_URL = "https://github.com/lukasmasuch/streamlit-pydantic"
 
 HERE = os.path.abspath(os.path.dirname(__file__))
