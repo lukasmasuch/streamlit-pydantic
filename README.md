@@ -7,7 +7,10 @@
     <strong>Transform Pydantic Models into Streamlit UI components</strong>
 </p>
 
+
 <p align="center">
+    <a href="https://pypi.org/project/streamlit-pydantic/" title="PyPi Version"><img src="https://img.shields.io/pypi/v/streamlit-pydantic?color=green&style=flat"></a>
+    <a href="https://pypi.org/project/streamlit-pydantic/" title="Python Version"><img src="https://img.shields.io/badge/Python-3.6%2B-blue&style=flat"></a>
     <a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/LICENSE" title="Project License"><img src="https://img.shields.io/badge/License-MIT-green.svg"></a>
     <a href="https://github.com/lukasmasuch/streamlit-pydantic/actions?query=workflow%3Abuild-pipeline" title="Build status"><img src="https://img.shields.io/github/workflow/status/lukasmasuch/streamlit-pydantic/build-pipeline?style=flat"></a>
     <a href="https://twitter.com/lukasmasuch" title="Follow on Twitter"><img src="https://img.shields.io/twitter/follow/lukasmasuch.svg?style=social&label=Follow"></a>
