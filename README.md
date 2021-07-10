@@ -4,7 +4,7 @@
 </h1>
 
 <p align="center">
-    <strong>Transform Pydantic Models into Streamlit Forms</strong>
+    <strong>Transform Pydantic Models into Streamlit UI components</strong>
 </p>
 
 <p align="center">
@@ -54,7 +54,7 @@ Streamlit-pydantic provides the `pydantic_input` and `pydantic_output` methods t
 
 2. Run the streamlit server on the python script: `streamlit run my_script.py`
 
-3. Find out more usage information in the [Features](#features) section or get inspired by our [examples](#examples).
+3. You can find additional examples in the [examples](#examples) section below.
 
 ## Examples
 
@@ -166,7 +166,7 @@ TODO
 
 ```bash
 pip install universal-build
-python build.py --make
+python build.py --make --check
 ```
 
 Refer to our [contribution guides](https://github.com/lukasmasuch/streamlit-pydantic/blob/main/CONTRIBUTING.md#development-instructions) for more detailed information on our build scripts and development process.
