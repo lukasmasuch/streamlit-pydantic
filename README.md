@@ -22,15 +22,121 @@
   <a href="https://github.com/lukasmasuch/streamlit-pydantic/releases">Changelog</a>
 </p>
 
-TODO
-
-## Highlights
-
-- 📄&nbsp; TODO
+Streamlit-pydantic makes it easy to deal with Pydantic objects within Streamlit. It allows to directly generate Input as well as Output UI components based on a Pydantic models.
 
 ## Getting Started
 
-TODO
+### Installation
+
+> _Requirements: Python 3.6+._
+
+```bash
+pip install streamlit-pydantic
+```
+
+### Usage
+
+Streamlit-pydantic provides the `pydantic_input` and `pydantic_output` methods to render input/output UI components from Pydantic models. Those methods can be easily embedded into any streamlit script. For example:
+
+1. Create a script (`my_script.py`) with a Pydantic model and render it via `pydantic_input`:
+
+    ```python
+    from pydantic import BaseModel
+    import streamlit_pydantic as sp
+
+    class ExampleModel(BaseModel):
+        text: str
+        integer: int
+        test: bool
+    
+    sp.pydantic_input(ExampleModel, "input_data")
+    ```
+
+2. Run the streamlit server on the python script: `streamlit run my_script.py`
+
+3. Find out more usage information in the [Features](#features) section or get inspired by our [examples](#examples).
+
+## Examples
+
+The following collection of examples demonstrate how Streamlit Pydantic can be applied in more advanced scenarios. You can find additional - even more advanced - examples in the [examples folder](./examples). 
+
+### Simple Form
+
+```python
+import datetime
+
+import streamlit as st
+from pydantic import BaseModel, Field
+
+import streamlit_pydantic as sp
+
+
+class ExampleModel(BaseModel):
+    short_text: str = Field(..., max_length=60, description="Short text property")
+    positive_integer: int = Field(
+        ..., ge=0, multiple_of=10, description="Positive integer with step count of 10."
+    )
+    date: datetime.date = Field(
+        datetime.date.today(),
+        description="Date property.",
+    )
+
+
+with st.form(key="pydantic_form"):
+    # Render input model -> input data is accesible via st.session_state["input_data"]
+    sp.pydantic_input(ExampleModel, "input_data")
+    submit_button = st.form_submit_button(label="Submit")
+```
+
+### Input-output Form
+
+```python
+from enum import Enum
+from typing import Set
+
+import streamlit as st
+from pydantic import BaseModel, Field, ValidationError, parse_obj_as
+
+import streamlit_pydantic as sp
+
+
+class SelectionValue(str, Enum):
+    FOO = "foo"
+    BAR = "bar"
+
+
+class ExampleModel(BaseModel):
+    long_text: str = Field(..., description="Unlimited text property")
+    integer_in_range: int = Field(
+        20,
+        ge=10,
+        lt=30,
+        multiple_of=2,
+        description="Number property with a limited range.",
+    )
+    single_selection: SelectionValue = Field(
+        ..., description="Only select a single item from a set."
+    )
+    multi_selection: Set[SelectionValue] = Field(
+        ..., description="Allows multiple items from a set."
+    )
+
+
+with st.form(key="pydantic_form"):
+    # Render input model
+    sp.pydantic_input(ExampleModel, "input_data")
+    submit_button = st.form_submit_button(label="Submit")
+
+if submit_button:
+    try:
+        # Get input data from session
+        input_data_obj = parse_obj_as(ExampleModel, st.session_state["input_data"])
+        # Show the input data
+        sp.pydantic_output(input_data_obj)
+    except ValidationError as ex:
+        st.error(ex)
+```
+
 
 ## Support & Feedback
 
