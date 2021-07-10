@@ -45,7 +45,7 @@ setup(
     package_dir={"": "src"},
     py_modules=[splitext(basename(path))[0] for path in glob("src/*.py")],
     zip_safe=False,
-    install_requires=["streamlit", "pydantic"],
+    install_requires=["streamlit>=0.84.0", "pydantic"],
     # deprecated: dependency_links=dependency_links,
     extras_require={
         # TODO: Add all extras (e.g. for build and test) here:
@@ -63,6 +63,7 @@ setup(
             "pydocstyle",
             "isort",
             "lazydocs",
+            "universal-build",
         ],
     },
     include_package_data=True,
