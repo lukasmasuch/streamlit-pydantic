@@ -3,7 +3,7 @@ import pathlib
 
 import streamlit as st
 
-from streamlit_pydantic.ui_renderer import name_to_title
+from streamlit_pydantic.ui_renderer import _name_to_title
 
 st.set_page_config(page_title="Streamlit Pydantic Playground", page_icon=":magic_wand:")
 st.title("Streamlit Pydantic - Playground")
@@ -41,7 +41,7 @@ for i, demo in enumerate(demos):
     if demo == DEFAULT_DEMO:
         # Use hello world as default
         default_index = i
-    demo_title = name_to_title(demo.replace(".py", ""))
+    demo_title = _name_to_title(demo.replace(".py", ""))
     title_to_demo[demo_title] = demo
     demo_titles.append(demo_title)
 

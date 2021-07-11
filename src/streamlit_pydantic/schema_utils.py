@@ -1,3 +1,8 @@
+"""Utilities to help with JSON Schema.
+
+lazydocs: ignore
+"""
+
 from typing import Dict
 
 

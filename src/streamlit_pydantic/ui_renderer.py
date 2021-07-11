@@ -13,7 +13,7 @@ from pydantic.json import pydantic_encoder
 from streamlit_pydantic import schema_utils
 
 
-def name_to_title(name: str) -> str:
+def _name_to_title(name: str) -> str:
     """Converts a camelCase or snake_case name to title case."""
     # If camelCase -> convert to snake case
     name = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
@@ -22,7 +22,7 @@ def name_to_title(name: str) -> str:
     return name.replace("_", " ").strip().title()
 
 
-def function_has_named_arg(func: Callable, parameter: str) -> bool:
+def _function_has_named_arg(func: Callable, parameter: str) -> bool:
     try:
         sig = inspect.signature(func)
         for param in sig.parameters.values():
@@ -33,27 +33,32 @@ def function_has_named_arg(func: Callable, parameter: str) -> bool:
     return False
 
 
-def has_output_ui_renderer(data_item: BaseModel) -> bool:
+def _has_output_ui_renderer(data_item: BaseModel) -> bool:
     return hasattr(data_item, "render_output_ui")
 
 
-def has_input_ui_renderer(input_class: Type[BaseModel]) -> bool:
+def _has_input_ui_renderer(input_class: Type[BaseModel]) -> bool:
     return hasattr(input_class, "render_input_ui")
 
 
-def is_compatible_audio(mime_type: str) -> bool:
+def _is_compatible_audio(mime_type: str) -> bool:
     return mime_type in ["audio/mpeg", "audio/ogg", "audio/wav"]
 
 
-def is_compatible_image(mime_type: str) -> bool:
+def _is_compatible_image(mime_type: str) -> bool:
     return mime_type in ["image/png", "image/jpeg"]
 
 
-def is_compatible_video(mime_type: str) -> bool:
+def _is_compatible_video(mime_type: str) -> bool:
     return mime_type in ["video/mp4"]
 
 
 class InputUI:
+    """Input UI renderer.
+
+    lazydocs: ignore
+    """
+
     def __init__(
         self,
         key: str,
@@ -87,7 +92,7 @@ class InputUI:
         # TODO: check if state has input data
 
     def render_ui(self) -> Dict:
-        if has_input_ui_renderer(self._input_class):
+        if _has_input_ui_renderer(self._input_class):
             # The input model has a rendering function
             # The rendering also returns the current state of input data
             self._session_state[self._session_input_key] = self._input_class.render_input_ui(  # type: ignore
@@ -108,7 +113,7 @@ class InputUI:
 
             if not property.get("title"):
                 # Set property key as fallback title
-                property["title"] = name_to_title(property_key)
+                property["title"] = _name_to_title(property_key)
 
             if property_key in required_properties:
                 streamlit_app = self._streamlit_container
@@ -240,13 +245,13 @@ class InputUI:
 
         bytes = uploaded_file.getvalue()
         if property.get("mime_type"):
-            if is_compatible_audio(property["mime_type"]):
+            if _is_compatible_audio(property["mime_type"]):
                 # Show audio
                 streamlit_app.audio(bytes, format=property.get("mime_type"))
-            if is_compatible_image(property["mime_type"]):
+            if _is_compatible_image(property["mime_type"]):
                 # Show image
                 streamlit_app.image(bytes)
-            if is_compatible_video(property["mime_type"]):
+            if _is_compatible_video(property["mime_type"]):
                 # Show video
                 streamlit_app.video(bytes, format=property.get("mime_type"))
         return bytes
@@ -468,7 +473,7 @@ class InputUI:
             property = properties[property_key]
             if not property.get("title"):
                 # Set property key as fallback title
-                property["title"] = name_to_title(property_key)
+                property["title"] = _name_to_title(property_key)
             # construct full key based on key parts -> required later to get the value
             full_key = key + "." + property_key
             object_inputs[property_key] = self._render_property(
@@ -626,6 +631,11 @@ class InputUI:
 
 
 class OutputUI:
+    """Output UI renderer.
+
+    lazydocs: ignore
+    """
+
     def __init__(self, output_data: Any, input_data: Optional[Any] = None):
         self._output_data = output_data
         self._input_data = input_data
@@ -672,15 +682,15 @@ class OutputUI:
                 mime_type = property_schema["mime_type"]
                 file_extension = mimetypes.guess_extension(mime_type) or ""
 
-                if is_compatible_audio(mime_type):
+                if _is_compatible_audio(mime_type):
                     streamlit.audio(value.as_bytes(), format=mime_type)
                     return
 
-                if is_compatible_image(mime_type):
+                if _is_compatible_image(mime_type):
                     streamlit.image(value.as_bytes())
                     return
 
-                if is_compatible_video(mime_type):
+                if _is_compatible_video(mime_type):
                     streamlit.video(value.as_bytes(), format=mime_type)
                     return
 
@@ -707,8 +717,8 @@ class OutputUI:
 
     def _render_single_output(self, streamlit: st, output_data: BaseModel) -> None:
         try:
-            if has_output_ui_renderer(output_data):
-                if function_has_named_arg(output_data.render_output_ui, "input"):  # type: ignore
+            if _has_output_ui_renderer(output_data):
+                if _function_has_named_arg(output_data.render_output_ui, "input"):  # type: ignore
                     # render method also requests the input data
                     output_data.render_output_ui(streamlit, input=self._input_data)  # type: ignore
                 else:
@@ -735,7 +745,7 @@ class OutputUI:
 
                 output_property_value = output_data.__dict__[property_key]
 
-                if has_output_ui_renderer(output_property_value):
+                if _has_output_ui_renderer(output_property_value):
                     output_property_value.render_output_ui(streamlit)  # type: ignore
                     continue
 
@@ -798,7 +808,7 @@ class OutputUI:
         try:
             data_items: List = []
             for data_item in output_data:
-                if has_output_ui_renderer(data_item):
+                if _has_output_ui_renderer(data_item):
                     # Render using the render function
                     data_item.render_output_ui(streamlit)  # type: ignore
                     continue
