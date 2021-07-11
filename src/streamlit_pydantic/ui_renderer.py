@@ -56,18 +56,20 @@ def is_compatible_video(mime_type: str) -> bool:
 class InputUI:
     def __init__(
         self,
-        streamlit_container: Any,
+        key: str,
         input_class: Type[BaseModel],
-        session_input_key: str = "input_data",
+        streamlit_container: st = st,
         use_sidebar: bool = False,
     ):
+        self._key = key
+
         self._session_state = st.session_state
 
         # Initialize Sessions State
         if "run_id" not in st.session_state:
             self._session_state.run_id = 0
 
-        self._session_input_key = session_input_key
+        self._session_input_key = self._key + "-data"
         if self._session_input_key not in st.session_state:
             self._session_state[self._session_input_key] = {}
 
@@ -84,14 +86,14 @@ class InputUI:
 
         # TODO: check if state has input data
 
-    def render_ui(self) -> None:
+    def render_ui(self) -> Dict:
         if has_input_ui_renderer(self._input_class):
             # The input model has a rendering function
             # The rendering also returns the current state of input data
             self._session_state[self._session_input_key] = self._input_class.render_input_ui(  # type: ignore
                 self._streamlit_container, self._session_state[self._session_input_key]
             ).dict()
-            return
+            return self._session_state[self._session_input_key]
 
         required_properties = self._input_class.schema(by_alias=True).get(
             "required", []
@@ -119,10 +121,12 @@ class InputUI:
             except Exception:
                 pass
 
+        return self._session_state[self._session_input_key]
+
     def _get_default_streamlit_input_kwargs(self, key: str, property: Dict) -> Dict:
         streamlit_kwargs = {
             "label": property.get("title"),
-            "key": str(self._session_state.run_id) + "-" + key,
+            "key": str(self._session_state.run_id) + "-" + str(self._key) + "-" + key,
         }
 
         if property.get("description"):
@@ -808,21 +812,19 @@ class OutputUI:
 
 
 def pydantic_input(
+    key: str,
     input_class: Type[BaseModel],
-    session_input_key: str = "input_data",
     use_sidebar: bool = False,
-) -> None:
+) -> Dict:
     """Shows input UI elements for a selected Pydantic class.
 
     Args:
+        key (str): A string that identifies the form. Each form must have its own key.
         input_class (Type[BaseModel]): The input class (based on Pydantic BaseModel).
-        session_input_key (str, optional): The key used to store the input data inside the session. Defaults to `input_data`.
         use_sidebar (bool, optional): If `True`, optional input elements will be rendered on the sidebar.
     """
 
-    InputUI(
-        st, input_class, session_input_key=session_input_key, use_sidebar=use_sidebar
-    ).render_ui()
+    return InputUI(key, input_class, use_sidebar=use_sidebar).render_ui()
 
 
 def pydantic_output(output_data: Any) -> None:
@@ -859,13 +861,12 @@ def pydantic_form(
     """
 
     with st.form(key=key, clear_on_submit=clear_on_submit):
-        session_data_key = key + "-data"
-        pydantic_input(input_class, session_data_key)
+        input_state = pydantic_input(key, input_class, use_sidebar=False)
         submit_button = st.form_submit_button(label=submit_label)
 
         if submit_button:
             try:
-                return parse_obj_as(input_class, st.session_state[session_data_key])
+                return parse_obj_as(input_class, input_state)
             except ValidationError as ex:
                 st.error("Whoops! There were some problems with your input: ")
                 for error in ex.errors():
