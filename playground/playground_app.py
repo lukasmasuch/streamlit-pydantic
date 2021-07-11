@@ -9,13 +9,13 @@ st.set_page_config(page_title="Streamlit Pydantic Playground", page_icon=":magic
 st.title("Streamlit Pydantic - Playground")
 
 BADGES = """
-<a href="https://gitHub.com/lukasmasuch/streamlit-pydantic" title="Star Repo"><img src="https://img.shields.io/github/stars/lukasmasuch/streamlit-pydantic.svg?logo=github&style=social"></a>
-<a href="https://twitter.com/lukasmasuch" title="Follow on Twitter"><img src="https://img.shields.io/twitter/follow/lukasmasuch.svg?style=social&label=Follow"></a>
+<a href="https://gitHub.com/lukasmasuch/streamlit-pydantic" title="Star Repo" target="_blank"><img src="https://img.shields.io/github/stars/lukasmasuch/streamlit-pydantic.svg?logo=github&style=social"></a>
+<a href="https://twitter.com/lukasmasuch" title="Follow on Twitter" target="_blank"><img src="https://img.shields.io/twitter/follow/lukasmasuch.svg?style=social&label=Follow"></a>
 """
 st.markdown(BADGES, unsafe_allow_html=True)
 
 st.markdown(
-    "Streamlit-pydantic makes it easy to deal with Pydantic objects within Streamlit. It allows to directly generate Input as well as Output UI components based on a Pydantic models. "
+    "Streamlit-pydantic makes it easy to auto-generate UI elements from Pydantic models. Just define your data model and turn it into a full-fledged UI form. "
     + " You can explore some examples below 👇"
 )
 
