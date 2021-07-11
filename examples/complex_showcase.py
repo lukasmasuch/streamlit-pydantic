@@ -83,4 +83,6 @@ class ShowcaseModel(BaseModel):
 session_data = sp.pydantic_input(
     key="my_input", input_class=ShowcaseModel, use_sidebar=True
 )
-st.json(session_data)
+
+with st.beta_expander("Current Input State", expanded=False):
+    st.json(session_data)

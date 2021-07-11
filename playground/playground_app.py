@@ -19,7 +19,7 @@ st.markdown(
     + " You can explore some examples below 👇"
 )
 
-DEFAULT_DEMO = "simple_input"
+DEFAULT_DEMO = "simple_form.py"
 
 path_of_script = pathlib.Path(__file__).parent.resolve()
 path_to_examples = pathlib.Path(path_of_script).parent.joinpath("examples").resolve()

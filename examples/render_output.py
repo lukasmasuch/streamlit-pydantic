@@ -11,7 +11,5 @@ class ExampleModel(BaseModel):
     date: datetime.date = Field(..., description="A date.")
 
 
-instance = ExampleModel(
-    text="Some text", positive_integer=40, date=datetime.date.today()
-)
+instance = ExampleModel(text="Some text", integer=40, date=datetime.date.today())
 sp.pydantic_output(instance)
