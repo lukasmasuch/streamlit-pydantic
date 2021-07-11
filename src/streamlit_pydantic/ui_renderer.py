@@ -868,13 +868,15 @@ def pydantic_form(
             try:
                 return parse_obj_as(input_class, input_state)
             except ValidationError as ex:
-                st.error("Whoops! There were some problems with your input: ")
+                error_text = "**Whoops! There were some problems with your input:**"
                 for error in ex.errors():
                     if "loc" in error and "msg" in error:
                         location = ".".join(error["loc"]).replace("__root__.", "")
                         error_msg = "**" + location + ":** " + error["msg"]
-                        st.error(error_msg)
+                        error_text += "\n\n" + error_msg
                     else:
-                        st.error(str(error))
+                        # Fallback
+                        error_text += "\n\n" + str(error)
+                st.error(error_text)
                 return None
     return None
