@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, List, Optional, Type
 
 import pandas as pd
 import streamlit as st
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError, parse_obj_as
 from pydantic.json import pydantic_encoder
 
 from streamlit_pydantic import schema_utils
@@ -820,7 +820,7 @@ def pydantic_input(
         use_sidebar (bool, optional): If `True`, optional input elements will be rendered on the sidebar.
     """
 
-    InputUI(st, input_class, session_input_key=session_input_key).render_ui()
+    InputUI(st, input_class, session_input_key=session_input_key, use_sidebar=use_sidebar).render_ui()
 
 
 def pydantic_output(output_data: Any) -> None:
@@ -833,4 +833,41 @@ def pydantic_output(output_data: Any) -> None:
     OutputUI(output_data).render_ui()
 
 
-# def pydantic_function(function: )
+def pydantic_form(
+    key: str,
+    input_class: Type[BaseModel],
+    submit_label: str = "Submit",
+    clear_on_submit: bool = False,
+) -> Optional[BaseModel]:
+    """Generates a Streamlit form based on the given (Pydantic-based) input class.
+
+    Args:
+        key (str): A string that identifies the form. Each form must have its own key.
+        input_class (Type[BaseModel]): The input class (based on Pydantic BaseModel).
+        submit_label (str): A short label explaining to the user what this button is for. Defaults to “Submit”.
+        clear_on_submit (bool): If True, all widgets inside the form will be reset to their default values after the user presses the Submit button. Defaults to False.
+
+    Returns:
+        Optional[BaseModel]: An instance of the given input class,
+            if the submit button is used and the input data passes the Pydantic validation.
+    """
+
+    with st.form(key=key, clear_on_submit=clear_on_submit):
+        session_data_key = key + "-data"
+        pydantic_input(input_class, session_data_key)
+        submit_button = st.form_submit_button(label=submit_label)
+
+        if submit_button:
+            try:
+                return parse_obj_as(input_class, st.session_state[session_data_key])
+            except ValidationError as ex:
+                st.error("Whoops! There were some problems with your input: ")
+                for error in ex.errors():
+                    if "loc" in error and "msg" in error:
+                        location = ".".join(error["loc"]).replace("__root__.", "")
+                        error_msg = "**" + location + ":** " + error["msg"]
+                        st.error(error_msg)
+                    else:
+                        st.error(str(error))
+                return None
+    return None

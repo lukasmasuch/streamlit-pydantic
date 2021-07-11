@@ -5,4 +5,4 @@ __version__ = _about.__version__
 
 # Do other imports here
 
-from .ui_renderer import pydantic_input, pydantic_output
+from .ui_renderer import pydantic_form, pydantic_input, pydantic_output
