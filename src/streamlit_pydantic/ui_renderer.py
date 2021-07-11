@@ -826,7 +826,7 @@ def pydantic_input(
     input_class: Type[BaseModel],
     use_sidebar: bool = False,
 ) -> Dict:
-    """Shows input UI elements for a selected Pydantic class.
+    """Auto-generates input UI elements for a selected Pydantic class.
 
     Args:
         key (str): A string that identifies the form. Each form must have its own key.
@@ -841,7 +841,7 @@ def pydantic_input(
 
 
 def pydantic_output(output_data: Any) -> None:
-    """Renders the output data based on an instance of a Pydantic model.
+    """Auto-generates output UI elements for all properties of a (Pydantic-based) model instance.
 
     Args:
         output_data (Any): The output data.
@@ -860,7 +860,7 @@ def pydantic_form(
     submit_label: str = "Submit",
     clear_on_submit: bool = False,
 ) -> Optional[T]:
-    """Generates a Streamlit form based on the given (Pydantic-based) input class.
+    """Auto-generates a Streamlit form based on the given (Pydantic-based) input class.
 
     Args:
         key (str): A string that identifies the form. Each form must have its own key.
