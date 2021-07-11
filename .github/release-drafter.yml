@@ -38,6 +38,8 @@ replacers:
   - search: '/(?:and)?(,)?(\s)*@github-actions(?:\[bot\])?,?/g'
     replace: ""
 template: |
+  [![PyPi Release](https://img.shields.io/pypi/v/streamlit-pydantic/$RESOLVED_VERSION?color=blue)](https://pypi.org/project/streamlit-pydantic/$RESOLVED_VERSION)
+
   $CHANGES
 
   ## 👥 Contributors
