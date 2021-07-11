@@ -10,4 +10,4 @@ class ExampleModel(BaseModel):
 
 
 # Input data is accesible via st.session_state["input_data"]
-sp.pydantic_input(ExampleModel, "input_data", use_sidebar=True)
+sp.pydantic_input("model_input", ExampleModel, use_sidebar=True)
