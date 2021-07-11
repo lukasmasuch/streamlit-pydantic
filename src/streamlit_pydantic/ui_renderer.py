@@ -3,7 +3,7 @@ import inspect
 import json
 import mimetypes
 import re
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Type, TypeVar
 
 import pandas as pd
 import streamlit as st
@@ -820,7 +820,9 @@ def pydantic_input(
         use_sidebar (bool, optional): If `True`, optional input elements will be rendered on the sidebar.
     """
 
-    InputUI(st, input_class, session_input_key=session_input_key, use_sidebar=use_sidebar).render_ui()
+    InputUI(
+        st, input_class, session_input_key=session_input_key, use_sidebar=use_sidebar
+    ).render_ui()
 
 
 def pydantic_output(output_data: Any) -> None:
@@ -833,12 +835,16 @@ def pydantic_output(output_data: Any) -> None:
     OutputUI(output_data).render_ui()
 
 
+# Define generic type to allow autocompletion for the model fields
+T = TypeVar("T", bound=BaseModel)
+
+
 def pydantic_form(
     key: str,
-    input_class: Type[BaseModel],
+    input_class: Type[T],
     submit_label: str = "Submit",
     clear_on_submit: bool = False,
-) -> Optional[BaseModel]:
+) -> Optional[T]:
     """Generates a Streamlit form based on the given (Pydantic-based) input class.
 
     Args:
