@@ -10,135 +10,38 @@
 
 ---
 
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L16"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
-
-## <kbd>function</kbd> `name_to_title`
-
-```python
-name_to_title(name: str) → str
-```
-
-Converts a camelCase or snake_case name to title case. 
-
-
----
-
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L25"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
-
-## <kbd>function</kbd> `function_has_named_arg`
-
-```python
-function_has_named_arg(func: Callable, parameter: str) → bool
-```
-
-
-
-
-
-
----
-
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L36"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
-
-## <kbd>function</kbd> `has_output_ui_renderer`
-
-```python
-has_output_ui_renderer(data_item: BaseModel) → bool
-```
-
-
-
-
-
-
----
-
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L40"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
-
-## <kbd>function</kbd> `has_input_ui_renderer`
-
-```python
-has_input_ui_renderer(input_class: Type[BaseModel]) → bool
-```
-
-
-
-
-
-
----
-
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L44"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
-
-## <kbd>function</kbd> `is_compatible_audio`
-
-```python
-is_compatible_audio(mime_type: str) → bool
-```
-
-
-
-
-
-
----
-
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L48"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
-
-## <kbd>function</kbd> `is_compatible_image`
-
-```python
-is_compatible_image(mime_type: str) → bool
-```
-
-
-
-
-
-
----
-
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L52"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
-
-## <kbd>function</kbd> `is_compatible_video`
-
-```python
-is_compatible_video(mime_type: str) → bool
-```
-
-
-
-
-
-
----
-
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L810"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L824"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>function</kbd> `pydantic_input`
 
 ```python
 pydantic_input(
+    key: str,
     input_class: Type[BaseModel],
-    session_input_key: str = 'input_data',
     use_sidebar: bool = False
-) → None
+) → Dict
 ```
 
-Shows input UI elements for a selected Pydantic class. 
+Auto-generates input UI elements for a selected Pydantic class. 
 
 
 
 **Args:**
  
+ - <b>`key`</b> (str):  A string that identifies the form. Each form must have its own key. 
  - <b>`input_class`</b> (Type[BaseModel]):  The input class (based on Pydantic BaseModel). 
- - <b>`session_input_key`</b> (str, optional):  The key used to store the input data inside the session. Defaults to `input_data`. 
  - <b>`use_sidebar`</b> (bool, optional):  If `True`, optional input elements will be rendered on the sidebar. 
+
+
+
+**Returns:**
+ 
+ - <b>`Dict`</b>:  A dictionary with the current state of the input data. 
 
 
 ---
 
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L826"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L843"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>function</kbd> `pydantic_output`
 
@@ -146,7 +49,7 @@ Shows input UI elements for a selected Pydantic class.
 pydantic_output(output_data: Any) → None
 ```
 
-Renders the output data based on an instance of a Pydantic model. 
+Auto-generates output UI elements for all properties of a (Pydantic-based) model instance. 
 
 
 
@@ -157,85 +60,35 @@ Renders the output data based on an instance of a Pydantic model.
 
 ---
 
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L56"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L857"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-## <kbd>class</kbd> `InputUI`
-
-
-
-
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L57"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
-
-### <kbd>method</kbd> `__init__`
+## <kbd>function</kbd> `pydantic_form`
 
 ```python
-__init__(
-    streamlit_container: Any,
-    input_class: Type[BaseModel],
-    session_input_key: str = 'input_data',
-    use_sidebar: bool = False
-)
+pydantic_form(
+    key: str,
+    input_class: Type[~T],
+    submit_label: str = 'Submit',
+    clear_on_submit: bool = False
+) → Union[~T, NoneType]
 ```
 
+Auto-generates a Streamlit form based on the given (Pydantic-based) input class. 
 
 
 
+**Args:**
+ 
+ - <b>`key`</b> (str):  A string that identifies the form. Each form must have its own key. 
+ - <b>`input_class`</b> (Type[BaseModel]):  The input class (based on Pydantic BaseModel). 
+ - <b>`submit_label`</b> (str):  A short label explaining to the user what this button is for. Defaults to “Submit”. 
+ - <b>`clear_on_submit`</b> (bool):  If True, all widgets inside the form will be reset to their default values after the user presses the Submit button. Defaults to False. 
 
 
 
-
----
-
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L87"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
-
-### <kbd>method</kbd> `render_ui`
-
-```python
-render_ui() → None
-```
-
-
-
-
-
-
----
-
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L624"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
-
-## <kbd>class</kbd> `OutputUI`
-
-
-
-
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L625"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
-
-### <kbd>method</kbd> `__init__`
-
-```python
-__init__(output_data: Any, input_data: Optional[Any] = None)
-```
-
-
-
-
-
-
-
-
----
-
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L629"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
-
-### <kbd>method</kbd> `render_ui`
-
-```python
-render_ui() → None
-```
-
-
-
-
+**Returns:**
+ 
+ - <b>`Optional[BaseModel]`</b>:  An instance of the given input class,  if the submit button is used and the input data passes the Pydantic validation. 
 
 
 
