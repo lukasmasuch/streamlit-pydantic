@@ -120,43 +120,6 @@ if data:
     st.json(data.json())
 ```
 
-### Render Input UI
-
-```python
-from pydantic import BaseModel
-
-import streamlit_pydantic as sp
-
-
-class ExampleModel(BaseModel):
-    some_text: str
-    some_number: int = 10  # Optional
-    some_boolean: bool = True  # Option
-
-
-input_data = sp.pydantic_input("model_input", ExampleModel, use_sidebar=True)
-```
-
-### Render Output
-
-```python
-import datetime
-
-from pydantic import BaseModel, Field
-
-import streamlit_pydantic as sp
-
-
-class ExampleModel(BaseModel):
-    text: str = Field(..., description="A text property")
-    integer: int = Field(..., description="An integer property.")
-    date: datetime.date = Field(..., description="A date.")
-
-
-instance = ExampleModel(text="Some text", integer=40, date=datetime.date.today())
-sp.pydantic_output(instance)
-```
-
 ### Date Validation
 
 ```python
@@ -224,6 +187,63 @@ class ExampleModel(BaseModel):
 data = sp.pydantic_form(key="my_form", input_class=ExampleModel)
 if data:
     st.json(data.json())
+```
+
+### Render Input
+
+```python
+from pydantic import BaseModel
+
+import streamlit_pydantic as sp
+
+
+class ExampleModel(BaseModel):
+    some_text: str
+    some_number: int = 10  # Optional
+    some_boolean: bool = True  # Option
+
+
+input_data = sp.pydantic_input("model_input", ExampleModel, use_sidebar=True)
+```
+
+### Render Output
+
+```python
+import datetime
+
+from pydantic import BaseModel, Field
+
+import streamlit_pydantic as sp
+
+
+class ExampleModel(BaseModel):
+    text: str = Field(..., description="A text property")
+    integer: int = Field(..., description="An integer property.")
+    date: datetime.date = Field(..., description="A date.")
+
+
+instance = ExampleModel(text="Some text", integer=40, date=datetime.date.today())
+sp.pydantic_output(instance)
+```
+
+### Custom Form
+
+```python
+import streamlit as st
+from pydantic import BaseModel
+
+import streamlit_pydantic as sp
+
+
+class ExampleModel(BaseModel):
+    some_text: str
+    some_number: int = 10
+    some_boolean: bool = True
+
+
+with st.form(key="pydantic_form"):
+    sp.pydantic_input(key="my_input_model", input_class=ExampleModel)
+    submit_button = st.form_submit_button(label="Submit")
 ```
 
 ## Documentation
