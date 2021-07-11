@@ -1,9 +1,9 @@
 import datetime
 from enum import Enum
-from typing import List, Optional, Set
+from typing import Dict, List, Optional, Set
 
 import streamlit as st
-from pydantic import BaseModel, Field, SecretStr, ValidationError, parse_obj_as
+from pydantic import BaseModel, Field, SecretStr
 
 import streamlit_pydantic as sp
 from streamlit_pydantic.types import FileContent
@@ -64,9 +64,23 @@ class ShowcaseModel(BaseModel):
         ...,
         description="Another object embedded into this model.",
     )
+    string_list: List[str] = Field(
+        ..., max_items=20, description="List of string values"
+    )
+    int_list: List[int] = Field(..., description="List of int values")
+    string_dict: Dict[str, str] = Field(
+        ..., description="Dict property with string values"
+    )
+    float_dict: Dict[str, float] = Field(
+        ..., description="Dict property with float values"
+    )
+    object_list: List[OtherData] = Field(
+        ...,
+        description="A list of objects embedded into this model.",
+    )
 
 
-with st.form(key="pydantic_form"):
-    # Render input model
-    sp.pydantic_input(ShowcaseModel)
-    submit_button = st.form_submit_button(label="Submit")
+session_data = sp.pydantic_input(
+    key="my_input", input_class=ShowcaseModel, use_sidebar=True
+)
+st.json(session_data)

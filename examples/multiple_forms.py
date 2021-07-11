@@ -1,26 +1,21 @@
 import datetime
 
 import streamlit as st
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 import streamlit_pydantic as sp
 
 
 class ExampleModel(BaseModel):
-    short_text: str = Field(..., max_length=60, description="Short text property")
-    positive_integer: int = Field(
-        ..., ge=0, multiple_of=10, description="Positive integer with step count of 10."
-    )
-    date: datetime.date = Field(
-        datetime.date.today(),
-        description="Date property.",
-    )
+    some_text: str
+    some_number: int = 10
+    some_boolean: bool = True
 
 
 col1, col2 = st.beta_columns(2)
 
 with col1:
-    data = sp.pydantic_form(key="my_form", input_class=ExampleModel)
+    data = sp.pydantic_form(key="form_1", input_class=ExampleModel)
     if data:
         st.json(data.json())
 
