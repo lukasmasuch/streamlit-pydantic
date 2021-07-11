@@ -6,16 +6,12 @@ import streamlit_pydantic as sp
 
 
 class ExampleModel(BaseModel):
-    short_text: str = Field(..., max_length=60, description="Short text property")
-    positive_integer: int = Field(
-        ..., ge=0, multiple_of=10, description="Positive integer with step count of 10."
-    )
-    date: datetime.date = Field(
-        datetime.date.today(),
-        description="Date property.",
-    )
+    text: str = Field(..., description="A text property")
+    integer: int = Field(..., description="An integer property.")
+    date: datetime.date = Field(..., description="A date.")
 
 
-data = sp.pydantic_form(key="my_form", input_class=ExampleModel)
-if data:
-    sp.pydantic_output(data)
+instance = ExampleModel(
+    text="Some text", positive_integer=40, date=datetime.date.today()
+)
+sp.pydantic_output(instance)
