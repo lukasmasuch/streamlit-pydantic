@@ -9,5 +9,6 @@ path_of_script = pathlib.Path(__file__).parent.resolve()
 
 demos = [str(dir) for dir in filter(os.path.isfile, os.listdir(path_of_script))]
 
+st.write(path_of_script)
 for i, demo in enumerate(demos):
     st.write(name_to_title(demo))
