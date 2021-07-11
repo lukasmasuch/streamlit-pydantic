@@ -84,8 +84,8 @@ pip install streamlit-pydantic
 | ------------------------ | ------------------------------------------------------ |
 | 🚨&nbsp; **Bug Reports**       | <a href="https://github.com/lukasmasuch/streamlit-pydantic/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+label%3Abug+sort%3Areactions-%2B1-desc+" title="Open Bug Report"><img src="https://img.shields.io/github/issues/lukasmasuch/streamlit-pydantic/bug.svg?label=bug"></a>                                 |
 | 🎁&nbsp; **Feature Requests**  | <a href="https://github.com/lukasmasuch/streamlit-pydantic/issues?q=is%3Aopen+is%3Aissue+label%3Afeature+sort%3Areactions-%2B1-desc" title="Open Feature Request"><img src="https://img.shields.io/github/issues/lukasmasuch/streamlit-pydantic/feature.svg?label=feature%20request"></a>                                 |
-| 👩‍💻&nbsp; **Usage Questions**   |  _tbd_ |
-| 📢&nbsp; **Announcements**  | _tbd_ |
+| 👩‍💻&nbsp; **Usage Questions**   |  <a href="https://github.com/lukasmasuch/streamlit-pydantic/issues?q=is%3Aopen+is%3Aissue+label%3Asupport+sort%3Areactions-%2B1-desc" title="Open Support Request"> <img src="https://img.shields.io/github/issues/lukasmasuch/streamlit-pydantic/support.svg?label=support%20request"></a> |
+| 📢&nbsp; **Announcements**  | <a href="https://twitter.com/lukasmasuch" title="Follow me on Twitter"><img src="https://img.shields.io/twitter/follow/lukasmasuch.svg?style=social&label=Follow"> |
 
 <br>
 
