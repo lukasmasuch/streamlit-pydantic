@@ -64,6 +64,7 @@ setup(
             "isort",
             "lazydocs",
             "universal-build",
+            "rope",
         ],
     },
     include_package_data=True,
