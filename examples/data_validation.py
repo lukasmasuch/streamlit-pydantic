@@ -1,7 +1,6 @@
 import streamlit as st
-from pydantic import BaseModel, ByteSize, Field, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl
 from pydantic.color import Color
-from pydantic.types import PaymentCardNumber
 
 import streamlit_pydantic as sp
 
