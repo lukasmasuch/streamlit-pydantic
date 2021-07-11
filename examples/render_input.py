@@ -9,5 +9,4 @@ class ExampleModel(BaseModel):
     some_boolean: bool = True
 
 
-# Input data is accesible via st.session_state["input_data"]
-sp.pydantic_input("model_input", ExampleModel, use_sidebar=True)
+input_data = sp.pydantic_input("model_input", ExampleModel, use_sidebar=True)
