@@ -822,6 +822,9 @@ def pydantic_input(
         key (str): A string that identifies the form. Each form must have its own key.
         input_class (Type[BaseModel]): The input class (based on Pydantic BaseModel).
         use_sidebar (bool, optional): If `True`, optional input elements will be rendered on the sidebar.
+
+    Returns:
+        Dict: A dictionary with the current state of the input data.
     """
 
     return InputUI(key, input_class, use_sidebar=use_sidebar).render_ui()
