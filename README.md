@@ -18,11 +18,11 @@
 
 <p align="center">
   <a href="#getting-started">Getting Started</a> •
-  <a href="#features">Features & Screenshots</a> •
   <a href="#documentation">Documentation</a> •
   <a href="#support--feedback">Support</a> •
   <a href="https://github.com/lukasmasuch/streamlit-pydantic/issues/new?labels=bug&template=01_bug-report.md">Report a Bug</a> •
   <a href="https://github.com/lukasmasuch/streamlit-pydantic/releases">Changelog</a>
+  <a href="#contribution">Contribution</a> •
 </p>
 
 Streamlit-pydantic makes it easy to auto-generate UI elements from [Pydantic](https://github.com/samuelcolvin/pydantic/) models. Just define your data model and turn it into a full-fledged UI form. It supports data validation, nested models, and field limitations. Streamlit-pydantic can be easily integrated into any Streamlit app.
@@ -77,17 +77,6 @@ pip install streamlit-pydantic
 2. Run the streamlit server on the python script: `streamlit run my_script.py`
 
 3. You can find additional examples in the [examples](#examples) section below.
-
-## Support & Feedback
-
-| Type                     | Channel                                              |
-| ------------------------ | ------------------------------------------------------ |
-| 🚨&nbsp; **Bug Reports**       | <a href="https://github.com/lukasmasuch/streamlit-pydantic/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+label%3Abug+sort%3Areactions-%2B1-desc+" title="Open Bug Report"><img src="https://img.shields.io/github/issues/lukasmasuch/streamlit-pydantic/bug.svg?label=bug"></a>                                 |
-| 🎁&nbsp; **Feature Requests**  | <a href="https://github.com/lukasmasuch/streamlit-pydantic/issues?q=is%3Aopen+is%3Aissue+label%3Afeature+sort%3Areactions-%2B1-desc" title="Open Feature Request"><img src="https://img.shields.io/github/issues/lukasmasuch/streamlit-pydantic/feature.svg?label=feature%20request"></a>                                 |
-| 👩‍💻&nbsp; **Usage Questions**   |  <a href="https://github.com/lukasmasuch/streamlit-pydantic/issues?q=is%3Aopen+is%3Aissue+label%3Asupport+sort%3Areactions-%2B1-desc" title="Open Support Request"> <img src="https://img.shields.io/github/issues/lukasmasuch/streamlit-pydantic/support.svg?label=support%20request"></a> |
-| 📢&nbsp; **Announcements**  | <a href="https://twitter.com/lukasmasuch" title="Follow me on Twitter"><img src="https://img.shields.io/twitter/follow/lukasmasuch.svg?style=social&label=Follow"> |
-
-<br>
 
 ## Examples
 
@@ -245,6 +234,15 @@ with st.form(key="pydantic_form"):
     sp.pydantic_input(key="my_input_model", input_class=ExampleModel)
     submit_button = st.form_submit_button(label="Submit")
 ```
+
+## Support & Feedback
+
+| Type                     | Channel                                              |
+| ------------------------ | ------------------------------------------------------ |
+| 🚨&nbsp; **Bug Reports**       | <a href="https://github.com/lukasmasuch/streamlit-pydantic/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+label%3Abug+sort%3Areactions-%2B1-desc+" title="Open Bug Report"><img src="https://img.shields.io/github/issues/lukasmasuch/streamlit-pydantic/bug.svg?label=bug"></a>                                 |
+| 🎁&nbsp; **Feature Requests**  | <a href="https://github.com/lukasmasuch/streamlit-pydantic/issues?q=is%3Aopen+is%3Aissue+label%3Afeature+sort%3Areactions-%2B1-desc" title="Open Feature Request"><img src="https://img.shields.io/github/issues/lukasmasuch/streamlit-pydantic/feature.svg?label=feature%20request"></a>                                 |
+| 👩‍💻&nbsp; **Usage Questions**   |  <a href="https://github.com/lukasmasuch/streamlit-pydantic/issues?q=is%3Aopen+is%3Aissue+label%3Asupport+sort%3Areactions-%2B1-desc" title="Open Support Request"> <img src="https://img.shields.io/github/issues/lukasmasuch/streamlit-pydantic/support.svg?label=support%20request"></a> |
+| 📢&nbsp; **Announcements**  | <a href="https://twitter.com/lukasmasuch" title="Follow me on Twitter"><img src="https://img.shields.io/twitter/follow/lukasmasuch.svg?style=social&label=Follow"> |
 
 ## Documentation
 
