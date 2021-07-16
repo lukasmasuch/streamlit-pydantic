@@ -296,7 +296,13 @@ class InputUI:
         reference_item = schema_utils.resolve_reference(
             property["items"]["$ref"], self._schema_references
         )
-        # TODO: how to select defaults
+
+        if property.get("default"):
+            try:
+                streamlit_kwargs["default"] = property.get("default")
+            except Exception:
+                pass
+
         return streamlit_app.multiselect(
             **streamlit_kwargs, options=reference_item["enum"]
         )
