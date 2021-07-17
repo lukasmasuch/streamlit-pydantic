@@ -4,6 +4,7 @@ import inspect
 import json
 import mimetypes
 import re
+from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Type, TypeVar
 
 import pandas as pd
@@ -54,6 +55,12 @@ def _is_compatible_video(mime_type: str) -> bool:
     return mime_type in ["video/mp4"]
 
 
+class GroupOptionalFieldsStrategy(str, Enum):
+    NO = "no"
+    EXPANDER = "expander"
+    SIDEBAR = "sidebar"
+
+
 class InputUI:
     """Input UI renderer.
 
@@ -65,7 +72,8 @@ class InputUI:
         key: str,
         input_class: Type[BaseModel],
         streamlit_container: st = st,
-        use_sidebar: bool = False,
+        group_optional_fields: GroupOptionalFieldsStrategy = "no",  # type: ignore
+        lowercase_labels: bool = False,
     ):
         self._key = key
 
@@ -79,7 +87,8 @@ class InputUI:
         if self._session_input_key not in st.session_state:
             self._session_state[self._session_input_key] = {}
 
-        self._use_sidebar = use_sidebar
+        self._lowercase_labels = lowercase_labels
+        self._group_optional_fields = group_optional_fields
         self._streamlit_container = streamlit_container
 
         if dataclasses.is_dataclass(input_class):
@@ -112,19 +121,23 @@ class InputUI:
             "required", []
         )
 
+        properties_in_expander = []
+
         for property_key in self._schema_properties.keys():
-            if self._use_sidebar:
-                streamlit_app = self._streamlit_container.sidebar
-            else:
-                streamlit_app = self._streamlit_container
+            streamlit_app = self._streamlit_container
+            if property_key not in required_properties:
+                if self._group_optional_fields == "sidebar":
+                    streamlit_app = self._streamlit_container.sidebar
+                elif self._group_optional_fields == "expander":
+                    properties_in_expander.append(property_key)
+                    # Render properties later in expander (see below)
+                    continue
+
             property = self._schema_properties[property_key]
 
             if not property.get("title"):
                 # Set property key as fallback title
                 property["title"] = _name_to_title(property_key)
-
-            if property_key in required_properties:
-                streamlit_app = self._streamlit_container
 
             try:
                 self._store_value(
@@ -134,11 +147,37 @@ class InputUI:
             except Exception:
                 pass
 
+        if properties_in_expander:
+            # Render optional properties in expander
+            with self._streamlit_container.beta_expander(
+                "Optional Parameters", expanded=False
+            ):
+                for property_key in properties_in_expander:
+                    property = self._schema_properties[property_key]
+
+                    if not property.get("title"):
+                        # Set property key as fallback title
+                        property["title"] = _name_to_title(property_key)
+
+                    try:
+                        self._store_value(
+                            property_key,
+                            self._render_property(
+                                self._streamlit_container, property_key, property
+                            ),
+                        )
+                    except Exception:
+                        pass
+
         return self._session_state[self._session_input_key]
 
     def _get_default_streamlit_input_kwargs(self, key: str, property: Dict) -> Dict:
+        label = property.get("title")
+        if label and self._lowercase_labels:
+            label = label.lower()
+
         streamlit_kwargs = {
-            "label": property.get("title"),
+            "label": label,
             "key": str(self._session_state.run_id) + "-" + str(self._key) + "-" + key,
         }
 
@@ -850,20 +889,28 @@ class OutputUI:
 def pydantic_input(
     key: str,
     input_class: Type[BaseModel],
-    use_sidebar: bool = False,
+    group_optional_fields: GroupOptionalFieldsStrategy = "no",  # type: ignore
+    lowercase_labels: bool = False,
 ) -> Dict:
     """Auto-generates input UI elements for a selected Pydantic class.
 
     Args:
         key (str): A string that identifies the form. Each form must have its own key.
         input_class (Type[BaseModel]): The input class (based on Pydantic BaseModel).
-        use_sidebar (bool, optional): If `True`, optional input elements will be rendered on the sidebar.
+        group_optional_fields (str, optional): If `sidebar`, optional input elements will be rendered on the sidebar.
+            If `expander`,  optional input elements will be rendered inside an expander element. Defaults to `no`.
+        lowercase_labels (bool): If `True`, all input element labels will be lowercased. Defaults to `False`.
 
     Returns:
         Dict: A dictionary with the current state of the input data.
     """
-
-    return InputUI(key, input_class, use_sidebar=use_sidebar).render_ui()
+    # TODO: use_sidebar=use_sidebar
+    return InputUI(
+        key,
+        input_class,
+        group_optional_fields=group_optional_fields,
+        lowercase_labels=lowercase_labels,
+    ).render_ui()
 
 
 def pydantic_output(output_data: Any) -> None:
@@ -885,6 +932,8 @@ def pydantic_form(
     input_class: Type[T],
     submit_label: str = "Submit",
     clear_on_submit: bool = False,
+    group_optional_fields: GroupOptionalFieldsStrategy = "no",  # type: ignore
+    lowercase_labels: bool = False,
 ) -> Optional[T]:
     """Auto-generates a Streamlit form based on the given (Pydantic-based) input class.
 
@@ -893,6 +942,9 @@ def pydantic_form(
         input_class (Type[BaseModel]): The input class (based on Pydantic BaseModel).
         submit_label (str): A short label explaining to the user what this button is for. Defaults to “Submit”.
         clear_on_submit (bool): If True, all widgets inside the form will be reset to their default values after the user presses the Submit button. Defaults to False.
+        group_optional_fields (str, optional): If `sidebar`, optional input elements will be rendered on the sidebar.
+            If `expander`,  optional input elements will be rendered inside an expander element. Defaults to `no`.
+        lowercase_labels (bool): If `True`, all input element labels will be lowercased. Defaults to `False`.
 
     Returns:
         Optional[BaseModel]: An instance of the given input class,
@@ -900,7 +952,12 @@ def pydantic_form(
     """
 
     with st.form(key=key, clear_on_submit=clear_on_submit):
-        input_state = pydantic_input(key, input_class, use_sidebar=False)
+        input_state = pydantic_input(
+            key,
+            input_class,
+            group_optional_fields=group_optional_fields,
+            lowercase_labels=lowercase_labels,
+        )  # TODO: use_sidebar=False
         submit_button = st.form_submit_button(label=submit_label)
 
         if submit_button:
