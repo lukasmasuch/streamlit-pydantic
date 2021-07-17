@@ -70,7 +70,7 @@ class InputUI:
     def __init__(
         self,
         key: str,
-        input_class: Type[BaseModel],
+        model: Type[BaseModel],
         streamlit_container: st = st,
         group_optional_fields: GroupOptionalFieldsStrategy = "no",  # type: ignore
         lowercase_labels: bool = False,
@@ -91,13 +91,13 @@ class InputUI:
         self._group_optional_fields = group_optional_fields
         self._streamlit_container = streamlit_container
 
-        if dataclasses.is_dataclass(input_class):
+        if dataclasses.is_dataclass(model):
             # Convert dataclasses
             import pydantic
 
-            self._input_class = pydantic.dataclasses.dataclass(input_class).__pydantic_model__  # type: ignore
+            self._input_class = pydantic.dataclasses.dataclass(model).__pydantic_model__  # type: ignore
         else:
-            self._input_class = input_class
+            self._input_class = model
 
         self._schema_properties = self._input_class.schema(by_alias=True).get(
             "properties", {}
@@ -888,7 +888,7 @@ class OutputUI:
 
 def pydantic_input(
     key: str,
-    input_class: Type[BaseModel],
+    model: Type[BaseModel],
     group_optional_fields: GroupOptionalFieldsStrategy = "no",  # type: ignore
     lowercase_labels: bool = False,
 ) -> Dict:
@@ -896,7 +896,7 @@ def pydantic_input(
 
     Args:
         key (str): A string that identifies the form. Each form must have its own key.
-        input_class (Type[BaseModel]): The input class (based on Pydantic BaseModel).
+        model (Type[BaseModel]): The input model. Either a class or instance based on Pydantic `BaseModel` or Python `dataclass`.
         group_optional_fields (str, optional): If `sidebar`, optional input elements will be rendered on the sidebar.
             If `expander`,  optional input elements will be rendered inside an expander element. Defaults to `no`.
         lowercase_labels (bool): If `True`, all input element labels will be lowercased. Defaults to `False`.
@@ -907,7 +907,7 @@ def pydantic_input(
     # TODO: use_sidebar=use_sidebar
     return InputUI(
         key,
-        input_class,
+        model,
         group_optional_fields=group_optional_fields,
         lowercase_labels=lowercase_labels,
     ).render_ui()
@@ -929,7 +929,7 @@ T = TypeVar("T", bound=BaseModel)
 
 def pydantic_form(
     key: str,
-    input_class: Type[T],
+    model: Type[T],
     submit_label: str = "Submit",
     clear_on_submit: bool = False,
     group_optional_fields: GroupOptionalFieldsStrategy = "no",  # type: ignore
@@ -939,7 +939,7 @@ def pydantic_form(
 
     Args:
         key (str): A string that identifies the form. Each form must have its own key.
-        input_class (Type[BaseModel]): The input class (based on Pydantic BaseModel).
+        model (Type[BaseModel]): The input model. Either a class or instance based on Pydantic `BaseModel` or Python `dataclass`.
         submit_label (str): A short label explaining to the user what this button is for. Defaults to “Submit”.
         clear_on_submit (bool): If True, all widgets inside the form will be reset to their default values after the user presses the Submit button. Defaults to False.
         group_optional_fields (str, optional): If `sidebar`, optional input elements will be rendered on the sidebar.
@@ -954,7 +954,7 @@ def pydantic_form(
     with st.form(key=key, clear_on_submit=clear_on_submit):
         input_state = pydantic_input(
             key,
-            input_class,
+            model,
             group_optional_fields=group_optional_fields,
             lowercase_labels=lowercase_labels,
         )  # TODO: use_sidebar=False
@@ -962,7 +962,7 @@ def pydantic_form(
 
         if submit_button:
             try:
-                return parse_obj_as(input_class, input_state)
+                return parse_obj_as(model, input_state)
             except ValidationError as ex:
                 error_text = "**Whoops! There were some problems with your input:**"
                 for error in ex.errors():

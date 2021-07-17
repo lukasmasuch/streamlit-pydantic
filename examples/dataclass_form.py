@@ -14,6 +14,6 @@ class ExampleModel:
     some_text: str = "default input"
 
 
-data = sp.pydantic_form(key="my_form", input_class=ExampleModel)
+data = sp.pydantic_form(key="my_form", model=ExampleModel)
 if data:
     st.json(json.dumps(data, default=pydantic_encoder))

@@ -11,5 +11,5 @@ class ExampleModel(BaseModel):
 
 
 with st.form(key="pydantic_form"):
-    sp.pydantic_input(key="my_input_model", input_class=ExampleModel)
+    sp.pydantic_input(key="my_input_model", model=ExampleModel)
     submit_button = st.form_submit_button(label="Submit")

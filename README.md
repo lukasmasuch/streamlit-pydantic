@@ -72,7 +72,7 @@ pip install streamlit-pydantic
         some_number: int
         some_boolean: bool
 
-    data = sp.pydantic_form(key="my_form", input_class=ExampleModel)
+    data = sp.pydantic_form(key="my_form", model=ExampleModel)
     if data:
         st.json(data.json())
     ```
@@ -107,7 +107,7 @@ class ExampleModel(BaseModel):
     some_number: int
     some_boolean: bool
 
-data = sp.pydantic_form(key="my_form", input_class=ExampleModel)
+data = sp.pydantic_form(key="my_form", model=ExampleModel)
 if data:
     st.json(data.json())
 ```
@@ -128,9 +128,33 @@ class ExampleModel(BaseModel):
     email: str = Field(..., max_length=100, regex=r"^\S+@\S+$")
 
 
-data = sp.pydantic_form(key="my_form", input_class=ExampleModel)
+data = sp.pydantic_form(key="my_form", model=ExampleModel)
 if data:
     st.json(data.json())
+```
+
+### Dataclasses Support
+
+```python
+import dataclasses
+import json
+
+import streamlit as st
+from pydantic.json import pydantic_encoder
+
+import streamlit_pydantic as sp
+
+
+@dataclasses.dataclass
+class ExampleModel:
+    some_number: int
+    some_boolean: bool
+    some_text: str = "default input"
+
+
+data = sp.pydantic_form(key="my_form", model=ExampleModel)
+if data:
+    st.json(json.dumps(data, default=pydantic_encoder))
 ```
 
 ### Complex Nested Model
@@ -176,7 +200,7 @@ class ExampleModel(BaseModel):
     )
 
 
-data = sp.pydantic_form(key="my_form", input_class=ExampleModel)
+data = sp.pydantic_form(key="my_form", model=ExampleModel)
 if data:
     st.json(data.json())
 ```
@@ -234,7 +258,7 @@ class ExampleModel(BaseModel):
 
 
 with st.form(key="pydantic_form"):
-    sp.pydantic_input(key="my_input_model", input_class=ExampleModel)
+    sp.pydantic_input(key="my_input_model", model=ExampleModel)
     submit_button = st.form_submit_button(label="Submit")
 ```
 

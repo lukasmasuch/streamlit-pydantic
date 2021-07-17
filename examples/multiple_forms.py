@@ -15,11 +15,11 @@ class ExampleModel(BaseModel):
 col1, col2 = st.beta_columns(2)
 
 with col1:
-    data = sp.pydantic_form(key="form_1", input_class=ExampleModel)
+    data = sp.pydantic_form(key="form_1", model=ExampleModel)
     if data:
         st.json(data.json())
 
 with col2:
-    data = sp.pydantic_form(key="form_2", input_class=ExampleModel)
+    data = sp.pydantic_form(key="form_2", model=ExampleModel)
     if data:
         st.json(data.json())

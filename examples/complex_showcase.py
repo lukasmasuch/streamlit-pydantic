@@ -87,7 +87,7 @@ class ShowcaseModel(BaseModel):
 
 
 session_data = sp.pydantic_input(
-    key="my_input", input_class=ShowcaseModel, group_optional_fields="sidebar"
+    key="my_input", model=ShowcaseModel, group_optional_fields="sidebar"
 )
 
 with st.beta_expander("Current Input State", expanded=False):

@@ -38,6 +38,6 @@ class ExampleModel(BaseModel):
     )
 
 
-data = sp.pydantic_form(key="my_form", input_class=ExampleModel)
+data = sp.pydantic_form(key="my_form", model=ExampleModel)
 if data:
     st.json(data.json())

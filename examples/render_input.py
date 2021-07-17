@@ -9,4 +9,6 @@ class ExampleModel(BaseModel):
     some_boolean: bool = True  # Option
 
 
-input_data = sp.pydantic_input("model_input", ExampleModel, group_optional_fields="sidebar")
+input_data = sp.pydantic_input(
+    "model_input", model=ExampleModel, group_optional_fields="sidebar"
+)
