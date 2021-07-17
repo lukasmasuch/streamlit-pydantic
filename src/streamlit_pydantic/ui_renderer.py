@@ -1,3 +1,4 @@
+import dataclasses
 import datetime
 import inspect
 import json
@@ -78,14 +79,21 @@ class InputUI:
         if self._session_input_key not in st.session_state:
             self._session_state[self._session_input_key] = {}
 
-        self._input_class = input_class
         self._use_sidebar = use_sidebar
         self._streamlit_container = streamlit_container
 
-        self._schema_properties = input_class.schema(by_alias=True).get(
+        if dataclasses.is_dataclass(input_class):
+            # Convert dataclasses
+            import pydantic
+
+            self._input_class = pydantic.dataclasses.dataclass(input_class).__pydantic_model__  # type: ignore
+        else:
+            self._input_class = input_class
+
+        self._schema_properties = self._input_class.schema(by_alias=True).get(
             "properties", {}
         )
-        self._schema_references = input_class.schema(by_alias=True).get(
+        self._schema_references = self._input_class.schema(by_alias=True).get(
             "definitions", {}
         )
 
