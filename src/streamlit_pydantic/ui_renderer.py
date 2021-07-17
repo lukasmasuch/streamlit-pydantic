@@ -904,7 +904,6 @@ def pydantic_input(
     Returns:
         Dict: A dictionary with the current state of the input data.
     """
-    # TODO: use_sidebar=use_sidebar
     return InputUI(
         key,
         model,
@@ -957,7 +956,7 @@ def pydantic_form(
             model,
             group_optional_fields=group_optional_fields,
             lowercase_labels=lowercase_labels,
-        )  # TODO: use_sidebar=False
+        )
         submit_button = st.form_submit_button(label=submit_label)
 
         if submit_button:
