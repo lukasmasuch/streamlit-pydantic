@@ -1,6 +1,6 @@
 import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Literal, Optional, Set
 
 import streamlit as st
 from pydantic import BaseModel, Field, SecretStr
@@ -57,8 +57,14 @@ class ShowcaseModel(BaseModel):
     single_selection: SelectionValue = Field(
         ..., description="Only select a single item from a set."
     )
+    single_selection_with_literal: Literal["foo", "bar"] = Field(
+        "foo", description="Only select a single item from a set."
+    )
     multi_selection: Set[SelectionValue] = Field(
         ..., description="Allows multiple items from a set."
+    )
+    multi_selection_with_literal: Set[Literal["foo", "bar"]] = Field(
+        ["foo", "bar"], description="Allows multiple items from a set."
     )
     single_object: OtherData = Field(
         ...,

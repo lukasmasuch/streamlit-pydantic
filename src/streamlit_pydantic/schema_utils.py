@@ -52,6 +52,14 @@ def is_multi_enum_property(property: Dict, references: Dict) -> bool:
         return False
 
     try:
+        # Uses literal
+        _ = property["items"]["enum"]
+        return True
+    except Exception:
+        pass
+
+    try:
+        # Uses enum
         _ = resolve_reference(property["items"]["$ref"], references)["enum"]
         return True
     except Exception:
@@ -59,6 +67,9 @@ def is_multi_enum_property(property: Dict, references: Dict) -> bool:
 
 
 def is_single_enum_property(property: Dict, references: Dict) -> bool:
+    if property.get("enum"):
+        return True
+
     try:
         _ = get_single_reference_item(property, references)["enum"]
         return True

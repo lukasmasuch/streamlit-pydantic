@@ -293,9 +293,16 @@ class InputUI:
         self, streamlit_app: st, key: str, property: Dict
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
-        reference_item = schema_utils.resolve_reference(
-            property["items"]["$ref"], self._schema_references
-        )
+        select_options: List[str] = []
+        if property.get("items").get("enum"):  # type: ignore
+            # Using Literal
+            select_options = property.get("items").get("enum")  # type: ignore
+        else:
+            # Using Enum
+            reference_item = schema_utils.resolve_reference(
+                property["items"]["$ref"], self._schema_references
+            )
+            select_options = reference_item["enum"]
 
         if property.get("default"):
             try:
@@ -303,31 +310,32 @@ class InputUI:
             except Exception:
                 pass
 
-        return streamlit_app.multiselect(
-            **streamlit_kwargs, options=reference_item["enum"]
-        )
+        return streamlit_app.multiselect(**streamlit_kwargs, options=select_options)
 
     def _render_single_enum_input(
         self, streamlit_app: st, key: str, property: Dict
     ) -> Any:
 
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
-        reference_item = schema_utils.get_single_reference_item(
-            property, self._schema_references
-        )
+        select_options: List[str] = []
+        if property.get("enum"):
+            select_options = property.get("enum")  # type: ignore
+        else:
+            reference_item = schema_utils.get_single_reference_item(
+                property, self._schema_references
+            )
+            select_options = reference_item["enum"]
 
         if property.get("default") is not None:
             try:
-                streamlit_kwargs["index"] = reference_item["enum"].index(
-                    property.get("default")
+                streamlit_kwargs["index"] = select_options.index(
+                    property.get("default")  # type: ignore
                 )
             except Exception:
                 # Use default selection
                 pass
 
-        return streamlit_app.selectbox(
-            **streamlit_kwargs, options=reference_item["enum"]
-        )
+        return streamlit_app.selectbox(**streamlit_kwargs, options=select_options)
 
     def _render_single_dict_input(
         self, streamlit_app: st, key: str, property: Dict
