@@ -144,6 +144,10 @@ class InputUI:
 
         if property.get("description"):
             streamlit_kwargs["help"] = property.get("description")
+        elif property.get("help"):
+            # Fallback to help. Used more frequently with dataclasses
+            streamlit_kwargs["help"] = property.get("help")
+
         return streamlit_kwargs
 
     def _store_value(self, key: str, value: Any) -> None:
