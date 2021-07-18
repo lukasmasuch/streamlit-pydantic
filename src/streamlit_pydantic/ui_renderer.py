@@ -74,7 +74,7 @@ class InputUI:
         streamlit_container: st = st,
         group_optional_fields: GroupOptionalFieldsStrategy = "no",  # type: ignore
         lowercase_labels: bool = False,
-        ignore_unchanged_values: bool = True,
+        ignore_empty_values: bool = False,
     ):
         self._key = key
 
@@ -91,13 +91,7 @@ class InputUI:
         self._lowercase_labels = lowercase_labels
         self._group_optional_fields = group_optional_fields
         self._streamlit_container = streamlit_container
-        self._ignore_unchanged_values = ignore_unchanged_values
-
-        self._initial_state_key = self._session_input_key + "-initial"
-
-        if self._ignore_unchanged_values:
-            if self._initial_state_key not in st.session_state:
-                self._session_state[self._initial_state_key] = {}
+        self._ignore_empty_values = ignore_empty_values
 
         if dataclasses.is_dataclass(model):
             # Convert dataclasses
@@ -149,7 +143,8 @@ class InputUI:
 
             try:
                 value = self._render_property(streamlit_app, property_key, property)
-                self._store_value(property_key, value)
+                if not self._is_value_ignored(property_key, value):
+                    self._store_value(property_key, value)
             except Exception:
                 pass
 
@@ -169,7 +164,10 @@ class InputUI:
                         value = self._render_property(
                             self._streamlit_container, property_key, property
                         )
-                        self._store_value(property_key, value)
+
+                        if not self._is_value_ignored(property_key, value):
+                            self._store_value(property_key, value)
+
                     except Exception:
                         pass
 
@@ -194,6 +192,18 @@ class InputUI:
             streamlit_kwargs["help"] = property.get("help")
 
         return streamlit_kwargs
+
+    def _is_value_ignored(self, property_key: str, value: Any) -> bool:
+        """Returns `True` if the value should be ignored for storing in session.
+
+        This is the case if `ignore_empty_values` is activated and the value is empty and not already set/changed before.
+        """
+        return (
+            self._ignore_empty_values
+            and not value
+            and self._get_value(property_key) is None
+            and type(value) != bool  # should not be applied to booleans
+        )
 
     def _store_value_in_state(self, state: dict, key: str, value: Any) -> None:
         key_elements = key.split(".")
@@ -220,19 +230,6 @@ class InputUI:
         return None
 
     def _store_value(self, key: str, value: Any) -> None:
-        if self._ignore_unchanged_values:
-            initial_state = self._session_state[self._initial_state_key]
-            initial_value = self._get_value_from_state(initial_state, key)
-            if initial_value is None:
-                # Store initial value in initial state
-                self._store_value_in_state(initial_state, key, value)
-                return
-            elif initial_value == value:
-                # If the current value is same as initial value -> ignore
-                # TODO: this is a bit risky since this does not always mean that value wasn't changed
-                # -> e.g. the default value for an number input cannot be selected
-                return
-
         return self._store_value_in_state(
             self._session_state[self._session_input_key], key, value
         )
@@ -559,9 +556,9 @@ class InputUI:
                 property["title"] = _name_to_title(property_key)
             # construct full key based on key parts -> required later to get the value
             full_key = key + "." + property_key
-            object_inputs[property_key] = self._render_property(
-                streamlit_app, full_key, property
-            )
+            value = self._render_property(streamlit_app, full_key, property)
+            if not self._is_value_ignored(property_key, value):
+                object_inputs[property_key] = value
         return object_inputs
 
     def _render_single_object_input(
