@@ -200,9 +200,11 @@ class InputUI:
         """
         return (
             self._ignore_empty_values
+            and (
+                type(value) == int or type(value) == float or isinstance(value, str)
+            )  # only for int, float or str
             and not value
             and self._get_value(property_key) is None
-            and type(value) != bool  # should not be applied to booleans
         )
 
     def _store_value_in_state(self, state: dict, key: str, value: Any) -> None:
@@ -906,6 +908,7 @@ def pydantic_input(
     model: Type[BaseModel],
     group_optional_fields: GroupOptionalFieldsStrategy = "no",  # type: ignore
     lowercase_labels: bool = False,
+    ignore_empty_values: bool = False,
 ) -> Dict:
     """Auto-generates input UI elements for a selected Pydantic class.
 
@@ -915,6 +918,7 @@ def pydantic_input(
         group_optional_fields (str, optional): If `sidebar`, optional input elements will be rendered on the sidebar.
             If `expander`,  optional input elements will be rendered inside an expander element. Defaults to `no`.
         lowercase_labels (bool): If `True`, all input element labels will be lowercased. Defaults to `False`.
+        ignore_empty_values (bool): If `True`, empty values for strings and numbers will not be stored in the session state. Defaults to `False`.
 
     Returns:
         Dict: A dictionary with the current state of the input data.
@@ -924,6 +928,7 @@ def pydantic_input(
         model,
         group_optional_fields=group_optional_fields,
         lowercase_labels=lowercase_labels,
+        ignore_empty_values=ignore_empty_values,
     ).render_ui()
 
 
@@ -948,6 +953,7 @@ def pydantic_form(
     clear_on_submit: bool = False,
     group_optional_fields: GroupOptionalFieldsStrategy = "no",  # type: ignore
     lowercase_labels: bool = False,
+    ignore_empty_values: bool = False,
 ) -> Optional[T]:
     """Auto-generates a Streamlit form based on the given (Pydantic-based) input class.
 
@@ -959,6 +965,7 @@ def pydantic_form(
         group_optional_fields (str, optional): If `sidebar`, optional input elements will be rendered on the sidebar.
             If `expander`,  optional input elements will be rendered inside an expander element. Defaults to `no`.
         lowercase_labels (bool): If `True`, all input element labels will be lowercased. Defaults to `False`.
+        ignore_empty_values (bool): If `True`, empty values for strings and numbers will not be stored in the session state. Defaults to `False`.
 
     Returns:
         Optional[BaseModel]: An instance of the given input class,
@@ -971,6 +978,7 @@ def pydantic_form(
             model,
             group_optional_fields=group_optional_fields,
             lowercase_labels=lowercase_labels,
+            ignore_empty_values=ignore_empty_values,
         )
         submit_button = st.form_submit_button(label=submit_label)
 
