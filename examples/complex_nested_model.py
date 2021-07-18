@@ -18,11 +18,11 @@ class SelectionValue(str, Enum):
 
 
 class ExampleModel(BaseModel):
-    long_text: str = Field(..., description="Unlimited text property")
+    long_text: str = Field(..., format="multi-line", description="Unlimited text property")
     integer_in_range: int = Field(
         20,
         ge=10,
-        lt=30,
+        le=30,
         multiple_of=2,
         description="Number property with a limited range.",
     )
