@@ -322,23 +322,14 @@ class InputUI:
         if property.get("maxLength") is not None:
             streamlit_kwargs["max_chars"] = property.get("maxLength")
 
-        if (
-            property.get("format")
-            or (
-                property.get("maxLength") is not None
-                and int(property.get("maxLength")) < 140  # type: ignore
-            )
-            or property.get("writeOnly")
-        ):
-            # If any format is set, use single text input
-            # If max chars is set to less than 140, use single text input
-            # If write only -> password field
+        if property.get("format") == "multi-line" and not property.get("writeOnly"):
+            # Use text area if format is multi-line (custom definition)
+            return streamlit_app.text_area(**streamlit_kwargs)
+        else:
+            # Use text input for most situations
             if property.get("writeOnly"):
                 streamlit_kwargs["type"] = "password"
             return streamlit_app.text_input(**streamlit_kwargs)
-        else:
-            # Otherwise use multiline text area
-            return streamlit_app.text_area(**streamlit_kwargs)
 
     def _render_multi_enum_input(
         self, streamlit_app: st, key: str, property: Dict
