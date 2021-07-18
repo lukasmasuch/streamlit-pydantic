@@ -74,6 +74,7 @@ class InputUI:
         streamlit_container: st = st,
         group_optional_fields: GroupOptionalFieldsStrategy = "no",  # type: ignore
         lowercase_labels: bool = False,
+        ignore_unchanged_values: bool = True,
     ):
         self._key = key
 
@@ -90,6 +91,13 @@ class InputUI:
         self._lowercase_labels = lowercase_labels
         self._group_optional_fields = group_optional_fields
         self._streamlit_container = streamlit_container
+        self._ignore_unchanged_values = ignore_unchanged_values
+
+        self._initial_state_key = self._session_input_key + "-initial"
+
+        if self._ignore_unchanged_values:
+            if self._initial_state_key not in st.session_state:
+                self._session_state[self._initial_state_key] = {}
 
         if dataclasses.is_dataclass(model):
             # Convert dataclasses
@@ -140,10 +148,8 @@ class InputUI:
                 property["title"] = _name_to_title(property_key)
 
             try:
-                self._store_value(
-                    property_key,
-                    self._render_property(streamlit_app, property_key, property),
-                )
+                value = self._render_property(streamlit_app, property_key, property)
+                self._store_value(property_key, value)
             except Exception:
                 pass
 
@@ -160,12 +166,10 @@ class InputUI:
                         property["title"] = _name_to_title(property_key)
 
                     try:
-                        self._store_value(
-                            property_key,
-                            self._render_property(
-                                self._streamlit_container, property_key, property
-                            ),
+                        value = self._render_property(
+                            self._streamlit_container, property_key, property
                         )
+                        self._store_value(property_key, value)
                     except Exception:
                         pass
 
@@ -179,6 +183,8 @@ class InputUI:
         streamlit_kwargs = {
             "label": label,
             "key": str(self._session_state.run_id) + "-" + str(self._key) + "-" + key,
+            # "on_change": detect_change, -> not supported for inside forms
+            # "args": (key,),
         }
 
         if property.get("description"):
@@ -189,31 +195,52 @@ class InputUI:
 
         return streamlit_kwargs
 
-    def _store_value(self, key: str, value: Any) -> None:
-        data_element = self._session_state[self._session_input_key]
+    def _store_value_in_state(self, state: dict, key: str, value: Any) -> None:
         key_elements = key.split(".")
         for i, key_element in enumerate(key_elements):
             if i == len(key_elements) - 1:
                 # add value to this element
-                data_element[key_element] = value
+                state[key_element] = value
                 return
-            if key_element not in data_element:
-                data_element[key_element] = {}
-            data_element = data_element[key_element]
+            if key_element not in state:
+                state[key_element] = {}
+            state = state[key_element]
+
+    def _get_value_from_state(self, state: dict, key: str) -> Any:
+        key_elements = key.split(".")
+        for i, key_element in enumerate(key_elements):
+            if i == len(key_elements) - 1:
+                # add value to this element
+                if key_element not in state:
+                    return None
+                return state[key_element]
+            if key_element not in state:
+                state[key_element] = {}
+            state = state[key_element]
+        return None
+
+    def _store_value(self, key: str, value: Any) -> None:
+        if self._ignore_unchanged_values:
+            initial_state = self._session_state[self._initial_state_key]
+            initial_value = self._get_value_from_state(initial_state, key)
+            if initial_value is None:
+                # Store initial value in initial state
+                self._store_value_in_state(initial_state, key, value)
+                return
+            elif initial_value == value:
+                # If the current value is same as initial value -> ignore
+                # TODO: this is a bit risky since this does not always mean that value wasn't changed
+                # -> e.g. the default value for an number input cannot be selected
+                return
+
+        return self._store_value_in_state(
+            self._session_state[self._session_input_key], key, value
+        )
 
     def _get_value(self, key: str) -> Any:
-        data_element = self._session_state[self._session_input_key]
-        key_elements = key.split(".")
-        for i, key_element in enumerate(key_elements):
-            if i == len(key_elements) - 1:
-                # add value to this element
-                if key_element not in data_element:
-                    return None
-                return data_element[key_element]
-            if key_element not in data_element:
-                data_element[key_element] = {}
-            data_element = data_element[key_element]
-        return None
+        return self._get_value_from_state(
+            self._session_state[self._session_input_key], key
+        )
 
     def _render_single_datetime_input(
         self, streamlit_app: st, key: str, property: Dict
