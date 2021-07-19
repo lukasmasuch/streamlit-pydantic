@@ -10,6 +10,7 @@
 ## Classes
 
 - [`types.FileContent`](./streamlit_pydantic.types.md#class-filecontent)
+- [`ui_renderer.GroupOptionalFieldsStrategy`](./streamlit_pydantic.ui_renderer.md#class-groupoptionalfieldsstrategy): An enumeration.
 
 ## Functions
 
