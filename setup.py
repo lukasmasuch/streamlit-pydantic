@@ -48,7 +48,6 @@ setup(
     install_requires=["streamlit>=0.84.0", "pydantic"],
     # deprecated: dependency_links=dependency_links,
     extras_require={
-        # TODO: Add all extras (e.g. for build and test) here:
         # extras can be installed via: pip install package[dev]
         "dev": [
             "setuptools",
@@ -58,6 +57,7 @@ setup(
             "pytest",
             "pytest-mock",
             "pytest-cov",
+            "types-dataclasses",
             "mypy",
             "black",
             "pydocstyle",
