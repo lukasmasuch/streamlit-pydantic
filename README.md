@@ -25,7 +25,7 @@
   <a href="https://github.com/lukasmasuch/streamlit-pydantic/releases">Changelog</a>
 </p>
 
-Streamlit-pydantic makes it easy to auto-generate UI elements from [Pydantic](https://github.com/samuelcolvin/pydantic/) models. Just define your data model and turn it into a full-fledged UI form. It supports data validation, nested models, and field limitations. Streamlit-pydantic can be easily integrated into any Streamlit app.
+Streamlit-pydantic makes it easy to auto-generate UI elements from [Pydantic](https://github.com/samuelcolvin/pydantic/) models or [dataclasses](https://docs.python.org/3/library/dataclasses.html). Just define your data model and turn it into a full-fledged UI form. It supports data validation, nested models, and field limitations. Streamlit-pydantic can be easily integrated into any Streamlit app.
 
 <sup>Beta Version: Only suggested for experimental usage.</sup>
 
@@ -42,7 +42,7 @@ Streamlit-pydantic makes it easy to auto-generate UI elements from [Pydantic](ht
 
 ## Highlights
 
-- 🪄&nbsp; Auto-generated UI elements from Pydantic models.
+- 🪄&nbsp; Auto-generated UI elements from Pydantic models & Dataclasses.
 - 📇&nbsp; Out-of-the-box data validation. 
 - 📑&nbsp; Supports nested Pydantic models.
 - 📏&nbsp; Supports field limits and customizations.

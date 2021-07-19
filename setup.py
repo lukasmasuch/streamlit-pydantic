@@ -10,7 +10,7 @@ from setuptools import find_packages, setup  # type: ignore
 # TODO: Update the package meta-data
 NAME = "streamlit-pydantic"
 MAIN_PACKAGE = "streamlit_pydantic"
-DESCRIPTION = "Transform Pydantic models into Streamlit forms."
+DESCRIPTION = "Auto-generate Streamlit UI from Pydantic Models & Dataclasses."
 URL = "https://github.com/lukasmasuch/streamlit-pydantic"
 EMAIL = "lukas.masuch@gmail.com"
 AUTHOR = "Lukas Masuch"
