@@ -10,15 +10,17 @@
 
 ---
 
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L838"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L906"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>function</kbd> `pydantic_input`
 
 ```python
 pydantic_input(
     key: str,
-    input_class: Type[BaseModel],
-    use_sidebar: bool = False
+    model: Type[BaseModel],
+    group_optional_fields: GroupOptionalFieldsStrategy = 'no',
+    lowercase_labels: bool = False,
+    ignore_empty_values: bool = False
 ) → Dict
 ```
 
@@ -29,8 +31,10 @@ Auto-generates input UI elements for a selected Pydantic class.
 **Args:**
  
  - <b>`key`</b> (str):  A string that identifies the form. Each form must have its own key. 
- - <b>`input_class`</b> (Type[BaseModel]):  The input class (based on Pydantic BaseModel). 
- - <b>`use_sidebar`</b> (bool, optional):  If `True`, optional input elements will be rendered on the sidebar. 
+ - <b>`model`</b> (Type[BaseModel]):  The input model. Either a class or instance based on Pydantic `BaseModel` or Python `dataclass`. 
+ - <b>`group_optional_fields`</b> (str, optional):  If `sidebar`, optional input elements will be rendered on the sidebar.  If `expander`,  optional input elements will be rendered inside an expander element. Defaults to `no`. 
+ - <b>`lowercase_labels`</b> (bool):  If `True`, all input element labels will be lowercased. Defaults to `False`. 
+ - <b>`ignore_empty_values`</b> (bool):  If `True`, empty values for strings and numbers will not be stored in the session state. Defaults to `False`. 
 
 
 
@@ -41,7 +45,7 @@ Auto-generates input UI elements for a selected Pydantic class.
 
 ---
 
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L857"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L935"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>function</kbd> `pydantic_output`
 
@@ -60,16 +64,19 @@ Auto-generates output UI elements for all properties of a (Pydantic-based) model
 
 ---
 
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L871"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L949"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>function</kbd> `pydantic_form`
 
 ```python
 pydantic_form(
     key: str,
-    input_class: Type[~T],
+    model: Type[~T],
     submit_label: str = 'Submit',
-    clear_on_submit: bool = False
+    clear_on_submit: bool = False,
+    group_optional_fields: GroupOptionalFieldsStrategy = 'no',
+    lowercase_labels: bool = False,
+    ignore_empty_values: bool = False
 ) → Union[~T, NoneType]
 ```
 
@@ -80,15 +87,29 @@ Auto-generates a Streamlit form based on the given (Pydantic-based) input class.
 **Args:**
  
  - <b>`key`</b> (str):  A string that identifies the form. Each form must have its own key. 
- - <b>`input_class`</b> (Type[BaseModel]):  The input class (based on Pydantic BaseModel). 
+ - <b>`model`</b> (Type[BaseModel]):  The input model. Either a class or instance based on Pydantic `BaseModel` or Python `dataclass`. 
  - <b>`submit_label`</b> (str):  A short label explaining to the user what this button is for. Defaults to “Submit”. 
  - <b>`clear_on_submit`</b> (bool):  If True, all widgets inside the form will be reset to their default values after the user presses the Submit button. Defaults to False. 
+ - <b>`group_optional_fields`</b> (str, optional):  If `sidebar`, optional input elements will be rendered on the sidebar.  If `expander`,  optional input elements will be rendered inside an expander element. Defaults to `no`. 
+ - <b>`lowercase_labels`</b> (bool):  If `True`, all input element labels will be lowercased. Defaults to `False`. 
+ - <b>`ignore_empty_values`</b> (bool):  If `True`, empty values for strings and numbers will not be stored in the session state. Defaults to `False`. 
 
 
 
 **Returns:**
  
  - <b>`Optional[BaseModel]`</b>:  An instance of the given input class,  if the submit button is used and the input data passes the Pydantic validation. 
+
+
+---
+
+<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L58"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+
+## <kbd>class</kbd> `GroupOptionalFieldsStrategy`
+An enumeration. 
+
+
+
 
 
 
