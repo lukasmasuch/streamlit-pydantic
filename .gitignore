@@ -1,6 +1,7 @@
 # IntelliJ
 target/
 .idea/
+research/
 *.iml
 
 # Sublime
