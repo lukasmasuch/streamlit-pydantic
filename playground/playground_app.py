@@ -50,7 +50,7 @@ selected_demo_title = st.selectbox(
 )
 selected_demo = title_to_demo[selected_demo_title]
 
-with st.expander("Source Code", expanded=False):
+with st.beta_expander("Source Code", expanded=False):
     with open(path_to_examples.joinpath(selected_demo), encoding="UTF-8") as f:
         st.code(f.read(), language="python")
 

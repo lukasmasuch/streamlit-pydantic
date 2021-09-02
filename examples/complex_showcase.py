@@ -92,5 +92,5 @@ session_data = sp.pydantic_input(
     key="my_input", model=ShowcaseModel, group_optional_fields="sidebar"
 )
 
-with st.expander("Current Input State", expanded=False):
+with st.beta_expander("Current Input State", expanded=False):
     st.json(session_data)

@@ -12,7 +12,7 @@ class ExampleModel(BaseModel):
     some_boolean: bool = True
 
 
-col1, col2 = st.columns(2)
+col1, col2 = st.beta_columns(2)
 
 with col1:
     data = sp.pydantic_form(key="form_1", model=ExampleModel)
