@@ -469,6 +469,37 @@ class InputUI:
         )
         return self._render_property(streamlit_app, key, reference_item)
 
+    def _render_union_property(
+        self, streamlit_app: st, key: str, property: Dict
+    ) -> Any:
+        streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
+
+        reference_items = schema_utils.get_union_references(
+            property, self._schema_references
+        )
+
+        name_reference_mapping: Dict[str, Dict] = {}
+
+        for reference in reference_items:
+            reference_title = _name_to_title(reference["title"])
+            name_reference_mapping[reference_title] = reference
+
+        streamlit_app.subheader(streamlit_kwargs["label"])  # type: ignore
+        if "help" in streamlit_kwargs:
+            streamlit_app.markdown(streamlit_kwargs["help"])
+
+        selected_reference = streamlit_app.selectbox(
+            key=streamlit_kwargs["key"],
+            label=streamlit_kwargs["label"] + " - Options",
+            options=name_reference_mapping.keys(),
+        )
+        input_data = self._render_object_input(
+            streamlit_app, key, name_reference_mapping[selected_reference]
+        )
+
+        streamlit_app.markdown("---")
+        return input_data
+
     def _render_multi_file_input(
         self, streamlit_app: st, key: str, property: Dict
     ) -> Any:
@@ -704,6 +735,9 @@ class InputUI:
 
         if schema_utils.is_single_reference(property):
             return self._render_single_reference(streamlit_app, key, property)
+
+        if schema_utils.is_union_property(property):
+            return self._render_union_property(streamlit_app, key, property)
 
         streamlit_app.warning(
             "The type of the following property is currently not supported: "

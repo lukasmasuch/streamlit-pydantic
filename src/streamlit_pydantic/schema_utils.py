@@ -3,7 +3,7 @@
 lazydocs: ignore
 """
 
-from typing import Dict
+from typing import Dict, List
 
 
 def resolve_reference(reference: str, references: Dict) -> Dict:
@@ -16,6 +16,15 @@ def get_single_reference_item(property: Dict, references: Dict) -> Dict:
     if reference is None:
         reference = property["allOf"][0]["$ref"]
     return resolve_reference(reference, references)
+
+
+def get_union_references(property: Dict, references: Dict) -> List[Dict]:
+    # Ref can either be directly in the properties or the first element of allOf
+    union_references = property.get("anyOf")
+    resolved_references: List[Dict] = []
+    for reference in union_references:  # type: ignore
+        resolved_references.append(resolve_reference(reference["$ref"], references))
+    return resolved_references
 
 
 def is_single_string_property(property: Dict) -> bool:
@@ -112,6 +121,20 @@ def is_single_object(property: Dict, references: Dict) -> bool:
         return "properties" in object_reference
     except Exception:
         return False
+
+
+def is_union_property(property: Dict) -> bool:
+    if property.get("anyOf") is None:
+        return False
+
+    if len(property.get("anyOf")) == 0:  # type: ignore
+        return False
+
+    for reference in property.get("anyOf"):  # type: ignore
+        if not is_single_reference(reference):
+            return False
+    
+    return True
 
 
 def is_property_list(property: Dict) -> bool:
