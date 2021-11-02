@@ -150,7 +150,7 @@ class InputUI:
 
         if properties_in_expander:
             # Render optional properties in expander
-            with self._streamlit_container.beta_expander(
+            with self._streamlit_container.expander(
                 "Optional Parameters", expanded=False
             ):
                 for property_key in properties_in_expander:
@@ -272,13 +272,13 @@ class InputUI:
                     )
                 except Exception:
                     pass
-            with self._streamlit_container.beta_container():
+            with self._streamlit_container.container():
                 self._streamlit_container.subheader(streamlit_kwargs.get("label"))
                 if streamlit_kwargs.get("description"):
                     self._streamlit_container.text(streamlit_kwargs.get("description"))
                 selected_date = None
                 selected_time = None
-                date_col, time_col = self._streamlit_container.beta_columns(2)
+                date_col, time_col = self._streamlit_container.columns(2)
                 with date_col:
                     date_kwargs = {"label": "Date", "key": key + "-date-input"}
                     if streamlit_kwargs.get("value"):
@@ -420,7 +420,7 @@ class InputUI:
         if not current_dict:
             current_dict = {}
 
-        key_col, value_col = streamlit_app.beta_columns(2)
+        key_col, value_col = streamlit_app.columns(2)
 
         with key_col:
             updated_key = streamlit_app.text_input(
@@ -443,8 +443,8 @@ class InputUI:
 
         streamlit_app.markdown("---")
 
-        with streamlit_app.beta_container():
-            clear_col, add_col = streamlit_app.beta_columns([1, 2])
+        with streamlit_app.container():
+            clear_col, add_col = streamlit_app.columns([1, 2])
 
             with clear_col:
                 if streamlit_app.button("Clear Items", key=key + "-clear-items"):
@@ -606,8 +606,8 @@ class InputUI:
 
         streamlit_app.markdown("---")
 
-        with streamlit_app.beta_container():
-            clear_col, add_col = streamlit_app.beta_columns([1, 2])
+        with streamlit_app.container():
+            clear_col, add_col = streamlit_app.columns([1, 2])
 
             with clear_col:
                 if streamlit_app.button("Clear Items", key=key + "-clear-items"):
@@ -648,8 +648,8 @@ class InputUI:
 
         streamlit_app.markdown("---")
 
-        with streamlit_app.beta_container():
-            clear_col, add_col = streamlit_app.beta_columns([1, 2])
+        with streamlit_app.container():
+            clear_col, add_col = streamlit_app.columns([1, 2])
 
             with clear_col:
                 if streamlit_app.button("Clear Items", key=key + "-clear-items"):
