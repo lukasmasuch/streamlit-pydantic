@@ -14,6 +14,8 @@ from pydantic.json import pydantic_encoder
 
 from streamlit_pydantic import schema_utils
 
+OVERWRITE_STREAMLIT_KWARGS_PREFIX = "st_kwargs_"
+
 
 def _name_to_title(name: str) -> str:
     """Converts a camelCase or snake_case name to title case."""
@@ -173,6 +175,18 @@ class InputUI:
 
         return self._session_state[self._session_input_key]
 
+    def _get_overwrite_streamlit_kwargs(self, key: str, property: Dict) -> Dict:
+
+        streamlit_kwargs: Dict = {}
+
+        for kwarg in property:
+            if kwarg.startswith(OVERWRITE_STREAMLIT_KWARGS_PREFIX):
+                streamlit_kwargs[
+                    kwarg.replace(OVERWRITE_STREAMLIT_KWARGS_PREFIX, "")
+                ] = property[kwarg]
+        print(streamlit_kwargs)
+        return streamlit_kwargs
+
     def _get_default_streamlit_input_kwargs(self, key: str, property: Dict) -> Dict:
         label = property.get("title")
         if label and self._lowercase_labels:
@@ -245,6 +259,7 @@ class InputUI:
         self, streamlit_app: st, key: str, property: Dict
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
+        overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
 
         if property.get("format") == "time":
             if property.get("default"):
@@ -254,7 +269,7 @@ class InputUI:
                     )
                 except Exception:
                     pass
-            return streamlit_app.time_input(**streamlit_kwargs)
+            return streamlit_app.time_input(**{**streamlit_kwargs, **overwrite_kwargs})
         elif property.get("format") == "date":
             if property.get("default"):
                 try:
@@ -263,7 +278,7 @@ class InputUI:
                     )
                 except Exception:
                     pass
-            return streamlit_app.date_input(**streamlit_kwargs)
+            return streamlit_app.date_input(**{**streamlit_kwargs, **overwrite_kwargs})
         elif property.get("format") == "date-time":
             if property.get("default"):
                 try:
@@ -310,12 +325,19 @@ class InputUI:
         self, streamlit_app: st, key: str, property: Dict
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
+        overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
+
         file_extension = None
         if "mime_type" in property:
             file_extension = mimetypes.guess_extension(property["mime_type"])
 
         uploaded_file = streamlit_app.file_uploader(
-            **streamlit_kwargs, accept_multiple_files=False, type=file_extension
+            **{
+                **streamlit_kwargs,
+                "accept_multiple_files": False,
+                "type": file_extension,
+                **overwrite_kwargs,
+            }
         )
         if uploaded_file is None:
             return None
@@ -337,6 +359,7 @@ class InputUI:
         self, streamlit_app: st, key: str, property: Dict
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
+        overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
 
         if property.get("default"):
             streamlit_kwargs["value"] = property.get("default")
@@ -350,17 +373,19 @@ class InputUI:
 
         if property.get("format") == "multi-line" and not property.get("writeOnly"):
             # Use text area if format is multi-line (custom definition)
-            return streamlit_app.text_area(**streamlit_kwargs)
+            return streamlit_app.text_area(**{**streamlit_kwargs, **overwrite_kwargs})
         else:
             # Use text input for most situations
             if property.get("writeOnly"):
                 streamlit_kwargs["type"] = "password"
-            return streamlit_app.text_input(**streamlit_kwargs)
+            return streamlit_app.text_input(**{**streamlit_kwargs, **overwrite_kwargs})
 
     def _render_multi_enum_input(
         self, streamlit_app: st, key: str, property: Dict
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
+        overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
+
         select_options: List[str] = []
         if property.get("items").get("enum"):  # type: ignore
             # Using Literal
@@ -378,13 +403,16 @@ class InputUI:
             except Exception:
                 pass
 
-        return streamlit_app.multiselect(**streamlit_kwargs, options=select_options)
+        return streamlit_app.multiselect(
+            **{**streamlit_kwargs, "options": select_options, **overwrite_kwargs}
+        )
 
     def _render_single_enum_input(
         self, streamlit_app: st, key: str, property: Dict
     ) -> Any:
-
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
+        overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
+
         select_options: List[str] = []
         if property.get("enum"):
             select_options = property.get("enum")  # type: ignore
@@ -403,7 +431,9 @@ class InputUI:
                 # Use default selection
                 pass
 
-        return streamlit_app.selectbox(**streamlit_kwargs, options=select_options)
+        return streamlit_app.selectbox(
+            **{**streamlit_kwargs, "options": select_options, **overwrite_kwargs}
+        )
 
     def _render_single_dict_input(
         self, streamlit_app: st, key: str, property: Dict
@@ -504,13 +534,19 @@ class InputUI:
         self, streamlit_app: st, key: str, property: Dict
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
+        overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
 
         file_extension = None
         if "mime_type" in property:
             file_extension = mimetypes.guess_extension(property["mime_type"])
 
         uploaded_files = streamlit_app.file_uploader(
-            **streamlit_kwargs, accept_multiple_files=True, type=file_extension
+            **{
+                **streamlit_kwargs,
+                "accept_multiple_files": True,
+                "type": file_extension,
+                **overwrite_kwargs,
+            }
         )
         uploaded_files_bytes = []
         if uploaded_files:
@@ -522,15 +558,17 @@ class InputUI:
         self, streamlit_app: st, key: str, property: Dict
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
+        overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
 
         if property.get("default"):
             streamlit_kwargs["value"] = property.get("default")
-        return streamlit_app.checkbox(**streamlit_kwargs)
+        return streamlit_app.checkbox(**{**streamlit_kwargs, **overwrite_kwargs})
 
     def _render_single_number_input(
         self, streamlit_app: st, key: str, property: Dict
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
+        overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
 
         number_transform = int
         if property.get("type") == "number":
@@ -575,9 +613,11 @@ class InputUI:
 
         if "min_value" in streamlit_kwargs and "max_value" in streamlit_kwargs:
             # TODO: Only if less than X steps
-            return streamlit_app.slider(**streamlit_kwargs)
+            return streamlit_app.slider(**{**streamlit_kwargs, **overwrite_kwargs})
         else:
-            return streamlit_app.number_input(**streamlit_kwargs)
+            return streamlit_app.number_input(
+                **{**streamlit_kwargs, **overwrite_kwargs}
+            )
 
     def _render_object_input(self, streamlit_app: st, key: str, property: Dict) -> Any:
         properties = property["properties"]
