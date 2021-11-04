@@ -184,7 +184,6 @@ class InputUI:
                 streamlit_kwargs[
                     kwarg.replace(OVERWRITE_STREAMLIT_KWARGS_PREFIX, "")
                 ] = property[kwarg]
-        print(streamlit_kwargs)
         return streamlit_kwargs
 
     def _get_default_streamlit_input_kwargs(self, key: str, property: Dict) -> Dict:
