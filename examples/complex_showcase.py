@@ -48,6 +48,11 @@ class ShowcaseModel(BaseModel):
         False,
         description="Boolean property. Optional because of default value.",
     )
+    read_only_text: str = Field(
+        "Lorem ipsum dolor sit amet",
+        description="This is a ready only text.",
+        readOnly=True,
+    )
     file_list: Optional[List[FileContent]] = Field(
         None,
         description="A list of files. Optional property.",

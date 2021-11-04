@@ -34,6 +34,11 @@ class ExampleModel(BaseModel):
     multi_selection: Set[SelectionValue] = Field(
         ..., description="Allows multiple items from a set."
     )
+    read_only_text: str = Field(
+        "Lorem ipsum dolor sit amet",
+        description="This is a ready only text.",
+        readOnly=True,
+    )
     single_object: OtherData = Field(
         ...,
         description="Another object embedded into this model.",

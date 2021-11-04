@@ -370,6 +370,11 @@ class InputUI:
         if property.get("maxLength") is not None:
             streamlit_kwargs["max_chars"] = property.get("maxLength")
 
+        if property.get("readOnly"):
+            # Read only property -> only show value
+            streamlit_app.code(streamlit_kwargs["value"])
+            return streamlit_kwargs["value"]
+
         if property.get("format") == "multi-line" and not property.get("writeOnly"):
             # Use text area if format is multi-line (custom definition)
             return streamlit_app.text_area(**{**streamlit_kwargs, **overwrite_kwargs})
