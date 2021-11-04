@@ -133,7 +133,7 @@ def is_union_property(property: Dict) -> bool:
     for reference in property.get("anyOf"):  # type: ignore
         if not is_single_reference(reference):
             return False
-    
+
     return True
 
 
