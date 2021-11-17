@@ -73,7 +73,7 @@ class InputUI:
         self,
         key: str,
         model: Type[BaseModel],
-        streamlit_container: st = st,
+        streamlit_container: Any = st,
         group_optional_fields: GroupOptionalFieldsStrategy = "no",  # type: ignore
         lowercase_labels: bool = False,
         ignore_empty_values: bool = False,
@@ -255,7 +255,7 @@ class InputUI:
         )
 
     def _render_single_datetime_input(
-        self, streamlit_app: st, key: str, property: Dict
+        self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
         overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
@@ -321,7 +321,7 @@ class InputUI:
             )
 
     def _render_single_file_input(
-        self, streamlit_app: st, key: str, property: Dict
+        self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
         overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
@@ -355,7 +355,7 @@ class InputUI:
         return bytes
 
     def _render_single_string_input(
-        self, streamlit_app: st, key: str, property: Dict
+        self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
         overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
@@ -385,7 +385,7 @@ class InputUI:
             return streamlit_app.text_input(**{**streamlit_kwargs, **overwrite_kwargs})
 
     def _render_multi_enum_input(
-        self, streamlit_app: st, key: str, property: Dict
+        self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
         overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
@@ -412,7 +412,7 @@ class InputUI:
         )
 
     def _render_single_enum_input(
-        self, streamlit_app: st, key: str, property: Dict
+        self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
         overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
@@ -440,7 +440,7 @@ class InputUI:
         )
 
     def _render_single_dict_input(
-        self, streamlit_app: st, key: str, property: Dict
+        self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
 
         # Add title and subheader
@@ -496,7 +496,7 @@ class InputUI:
         return current_dict
 
     def _render_single_reference(
-        self, streamlit_app: st, key: str, property: Dict
+        self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
         reference_item = schema_utils.get_single_reference_item(
             property, self._schema_references
@@ -504,7 +504,7 @@ class InputUI:
         return self._render_property(streamlit_app, key, reference_item)
 
     def _render_union_property(
-        self, streamlit_app: st, key: str, property: Dict
+        self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
 
@@ -535,7 +535,7 @@ class InputUI:
         return input_data
 
     def _render_multi_file_input(
-        self, streamlit_app: st, key: str, property: Dict
+        self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
         overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
@@ -559,7 +559,7 @@ class InputUI:
         return uploaded_files_bytes
 
     def _render_single_boolean_input(
-        self, streamlit_app: st, key: str, property: Dict
+        self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
         overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
@@ -569,7 +569,7 @@ class InputUI:
         return streamlit_app.checkbox(**{**streamlit_kwargs, **overwrite_kwargs})
 
     def _render_single_number_input(
-        self, streamlit_app: st, key: str, property: Dict
+        self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
         overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
@@ -623,7 +623,7 @@ class InputUI:
                 **{**streamlit_kwargs, **overwrite_kwargs}
             )
 
-    def _render_object_input(self, streamlit_app: st, key: str, property: Dict) -> Any:
+    def _render_object_input(self, streamlit_app: Any, key: str, property: Dict) -> Any:
         properties = property["properties"]
         object_inputs = {}
         for property_key in properties:
@@ -639,7 +639,7 @@ class InputUI:
         return object_inputs
 
     def _render_single_object_input(
-        self, streamlit_app: st, key: str, property: Dict
+        self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
         # Add title and subheader
         title = property.get("title")
@@ -653,7 +653,7 @@ class InputUI:
         return self._render_object_input(streamlit_app, key, object_reference)
 
     def _render_property_list_input(
-        self, streamlit_app: st, key: str, property: Dict
+        self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
 
         # Add title and subheader
@@ -700,7 +700,7 @@ class InputUI:
         return current_list
 
     def _render_object_list_input(
-        self, streamlit_app: st, key: str, property: Dict
+        self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
 
         # TODO: support max_items, and min_items properties
@@ -740,7 +740,7 @@ class InputUI:
         streamlit_app.write(current_list)
         return current_list
 
-    def _render_property(self, streamlit_app: st, key: str, property: Dict) -> Any:
+    def _render_property(self, streamlit_app: Any, key: str, property: Dict) -> Any:
         if schema_utils.is_single_enum_property(property, self._schema_references):
             return self._render_single_enum_input(streamlit_app, key, property)
 
@@ -814,7 +814,7 @@ class OutputUI:
             # st.json(jsonable_encoder(self._output_data))
 
     def _render_single_text_property(
-        self, streamlit: st, property_schema: Dict, value: Any
+        self, streamlit: Any, property_schema: Dict, value: Any
     ) -> None:
         # Add title and subheader
         streamlit.subheader(property_schema.get("title"))
@@ -826,7 +826,7 @@ class OutputUI:
             streamlit.code(str(value), language="plain")
 
     def _render_single_file_property(
-        self, streamlit: st, property_schema: Dict, value: Any
+        self, streamlit: Any, property_schema: Dict, value: Any
     ) -> None:
         # Add title and subheader
         streamlit.subheader(property_schema.get("title"))
@@ -866,7 +866,7 @@ class OutputUI:
             )
 
     def _render_single_complex_property(
-        self, streamlit: st, property_schema: Dict, value: Any
+        self, streamlit: Any, property_schema: Dict, value: Any
     ) -> None:
         # Add title and subheader
         streamlit.subheader(property_schema.get("title"))
@@ -875,7 +875,7 @@ class OutputUI:
 
         streamlit.json(json.dumps(value, default=pydantic_encoder))
 
-    def _render_single_output(self, streamlit: st, output_data: BaseModel) -> None:
+    def _render_single_output(self, streamlit: Any, output_data: BaseModel) -> None:
         try:
             if _has_output_ui_renderer(output_data):
                 if _function_has_named_arg(output_data.render_output_ui, "input"):  # type: ignore
@@ -964,7 +964,7 @@ class OutputUI:
         # TODO: Fallback to json output
         # streamlit.json(jsonable_encoder(output_data))
 
-    def _render_list_output(self, streamlit: st, output_data: List) -> None:
+    def _render_list_output(self, streamlit: Any, output_data: List) -> None:
         try:
             data_items: List = []
             for data_item in output_data:
