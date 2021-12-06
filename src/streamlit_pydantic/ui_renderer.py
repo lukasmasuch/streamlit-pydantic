@@ -415,8 +415,7 @@ class InputUI:
             select_options = reference_item["enum"]
 
         if property.get("init_value"):
-            try:
-                streamlit_kwargs["default"] = property.get("init_value")
+            streamlit_kwargs["default"] = property.get("init_value")
         elif property.get("default"):
             try:
                 streamlit_kwargs["default"] = property.get("default")
@@ -443,10 +442,9 @@ class InputUI:
             select_options = reference_item["enum"]
 
         if property.get("init_value"):
-            try:
-                streamlit_kwargs["index"] = select_options.index(
-                    property.get("init_value")  # type: ignore
-                )
+            streamlit_kwargs["index"] = select_options.index(
+                property.get("init_value")  # type: ignore
+            )
         elif property.get("default") is not None:
             try:
                 streamlit_kwargs["index"] = select_options.index(
