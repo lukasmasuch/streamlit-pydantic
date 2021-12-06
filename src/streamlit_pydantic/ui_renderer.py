@@ -143,11 +143,17 @@ class InputUI:
                 # Set property key as fallback title
                 property["title"] = _name_to_title(property_key)
 
+            # check if the input_class is an instance
+            if isinstance(self._input_class, BaseModel):
+                instance_value = dict(self._input_class).get(property_key)
+                if instance_value:
+                    property["init_value"] = instance_value
+
             try:
                 value = self._render_property(streamlit_app, property_key, property)
                 if not self._is_value_ignored(property_key, value):
                     self._store_value(property_key, value)
-            except Exception:
+            except Exception as e:
                 pass
 
         if properties_in_expander:
@@ -261,7 +267,9 @@ class InputUI:
         overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
 
         if property.get("format") == "time":
-            if property.get("default"):
+            if property.get("init_value"):
+                streamlit_kwargs["value"] = property.get("init_value")
+            elif property.get("default"):
                 try:
                     streamlit_kwargs["value"] = datetime.time.fromisoformat(  # type: ignore
                         property.get("default")
@@ -270,7 +278,9 @@ class InputUI:
                     pass
             return streamlit_app.time_input(**{**streamlit_kwargs, **overwrite_kwargs})
         elif property.get("format") == "date":
-            if property.get("default"):
+            if property.get("init_value"):
+                streamlit_kwargs["value"] = property.get("init_value")
+            elif property.get("default"):
                 try:
                     streamlit_kwargs["value"] = datetime.date.fromisoformat(  # type: ignore
                         property.get("default")
@@ -279,7 +289,9 @@ class InputUI:
                     pass
             return streamlit_app.date_input(**{**streamlit_kwargs, **overwrite_kwargs})
         elif property.get("format") == "date-time":
-            if property.get("default"):
+            if property.get("init_value"):
+                streamlit_kwargs["value"] = property.get("init_value")
+            elif property.get("default"):
                 try:
                     streamlit_kwargs["value"] = datetime.datetime.fromisoformat(  # type: ignore
                         property.get("default")
@@ -359,8 +371,9 @@ class InputUI:
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
         overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
-
-        if property.get("default"):
+        if property.get("init_value"):
+            streamlit_kwargs["value"] = property.get("init_value")
+        elif property.get("default"):
             streamlit_kwargs["value"] = property.get("default")
         elif property.get("example"):
             # TODO: also use example for other property types
@@ -401,7 +414,10 @@ class InputUI:
             )
             select_options = reference_item["enum"]
 
-        if property.get("default"):
+        if property.get("init_value"):
+            try:
+                streamlit_kwargs["default"] = property.get("init_value")
+        elif property.get("default"):
             try:
                 streamlit_kwargs["default"] = property.get("default")
             except Exception:
@@ -426,7 +442,12 @@ class InputUI:
             )
             select_options = reference_item["enum"]
 
-        if property.get("default") is not None:
+        if property.get("init_value"):
+            try:
+                streamlit_kwargs["index"] = select_options.index(
+                    property.get("init_value")  # type: ignore
+                )
+        elif property.get("default") is not None:
             try:
                 streamlit_kwargs["index"] = select_options.index(
                     property.get("default")  # type: ignore
@@ -564,7 +585,9 @@ class InputUI:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
         overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
 
-        if property.get("default"):
+        if property.get("init_value"):
+            streamlit_kwargs["value"] = property.get("init_value")
+        elif property.get("default"):
             streamlit_kwargs["value"] = property.get("default")
         return streamlit_app.checkbox(**{**streamlit_kwargs, **overwrite_kwargs})
 
@@ -604,7 +627,9 @@ class InputUI:
                 property["exclusiveMaximum"] - streamlit_kwargs["step"]
             )
 
-        if property.get("default") is not None:
+        if property.get("init_value") is not None:
+            streamlit_kwargs["value"] = number_transform(property.get("init_value"))
+        elif property.get("default") is not None:
             streamlit_kwargs["value"] = number_transform(property.get("default"))  # type: ignore
         else:
             if "min_value" in streamlit_kwargs:
@@ -627,13 +652,19 @@ class InputUI:
         properties = property["properties"]
         object_inputs = {}
         for property_key in properties:
-            property = properties[property_key]
-            if not property.get("title"):
+            new_property = properties[property_key]
+            if not new_property.get("title"):
                 # Set property key as fallback title
-                property["title"] = _name_to_title(property_key)
+                new_property["title"] = _name_to_title(property_key)
             # construct full key based on key parts -> required later to get the value
             full_key = key + "." + property_key
-            value = self._render_property(streamlit_app, full_key, property)
+
+            if property.get("init_value"):
+                new_property["init_value"] = dict(property.get("init_value")).get(
+                    property_key
+                )
+
+            value = self._render_property(streamlit_app, full_key, new_property)
             if not self._is_value_ignored(property_key, value):
                 object_inputs[property_key] = value
         return object_inputs
@@ -650,7 +681,101 @@ class InputUI:
         object_reference = schema_utils.get_single_reference_item(
             property, self._schema_references
         )
+
+        if property.get("init_value"):
+            object_reference["init_value"] = property.get("init_value")
+        else:
+            object_reference["init_value"] = None
         return self._render_object_input(streamlit_app, key, object_reference)
+
+    def _render_list_item(
+        self,
+        streamlit_app,
+        parent_key: str,
+        of_type: str,
+        value,
+        index: int,
+        object_reference=None,
+    ):
+
+        label = "Item #" + str(index + 1)
+        new_key = self._key + "_" + parent_key + "." + str(index)
+        item_plaeholder = streamlit_app.empty()
+
+        with item_plaeholder:
+
+            input_col, button_col = streamlit_app.columns([9, 2])
+
+            # vertical spacers
+            button_col.markdown("")
+            button_col.markdown("")
+
+            remove_click = button_col.button("Remove", key=new_key + "-remove")
+
+            value_kwargs = {}
+
+            #  insert an input field when the remove button has not been clicked
+            if not remove_click:
+                with input_col:
+                    if of_type == "object":
+
+                        new_object_reference = object_reference
+                        new_object_reference["init_value"] = value if value else None
+                        new_object_reference["title"] = label
+
+                        return self._render_object_input(
+                            streamlit_app, new_key, new_object_reference
+                        )
+
+                    elif of_type == "integer":
+                        value_kwargs["label"] = label
+                        value_kwargs["value"] = value if value else 0  # type: ignore
+                        value_kwargs["key"] = new_key
+                        return input_col.number_input(**value_kwargs)
+                    elif of_type == "number":
+                        value_kwargs["label"] = label
+                        value_kwargs["value"] = value if value else 0.0  # type: ignore
+                        value_kwargs["format"] = "%f"
+                        value_kwargs["key"] = new_key
+                        return input_col.number_input(**value_kwargs)
+                    else:
+                        value_kwargs["label"] = label
+                        value_kwargs["value"] = value if value else ""
+                        value_kwargs["key"] = new_key
+                        return input_col.text_input(**value_kwargs)
+            else:
+                # when the remove button is clicked clear the placeholder and return None
+                item_plaeholder.empty()
+                return None
+
+    def _render_list_controls(
+        self,
+        streamlit_app,
+        key: str,
+        data_list: List[Any],
+    ):
+
+        _, clear_col, add_col = streamlit_app.columns([7, 2, 2])
+
+        with clear_col:
+            if streamlit_app.button(
+                "Clear All", key=self._key + "_" + key + "-clear-all"
+            ):
+                data_list = []
+
+        with add_col:
+            if streamlit_app.button(
+                "Add Item", key=self._key + "_" + key + "-add-item"
+            ):
+
+                if len(data_list) > 0:
+                    # if the list has items, make a copy of the last item
+                    data_list.append(data_list[-1])
+                else:
+                    # If the list is empty, add a None to trigger a new empty item
+                    data_list.append(None)
+
+        return data_list
 
     def _render_property_list_input(
         self, streamlit_app: Any, key: str, property: Dict
@@ -661,43 +786,32 @@ class InputUI:
         if property.get("description"):
             streamlit_app.markdown(property.get("description"))
 
+        items_plaeholder = streamlit_app.empty()
         streamlit_app.markdown("---")
+        button_bar_placeholder = streamlit_app.empty()
 
-        current_list = self._get_value(key)
-        if not current_list:
-            current_list = []
+        object_list = []
 
-        value_kwargs = {"label": "Value", "key": key + "-new-value"}
-        if property["items"]["type"] == "integer":
-            value_kwargs["value"] = 0  # type: ignore
-            new_value = streamlit_app.number_input(**value_kwargs)
-        elif property["items"]["type"] == "number":
-            value_kwargs["value"] = 0.0  # type: ignore
-            value_kwargs["format"] = "%f"
-            new_value = streamlit_app.number_input(**value_kwargs)
+        if self._get_value(key) is not None or self._get_value(key) == []:
+            data_list = self._get_value(key)
+        elif property.get("init_value"):
+            data_list = property.get("init_value")
         else:
-            value_kwargs["value"] = ""
-            new_value = streamlit_app.text_input(**value_kwargs)
+            data_list = []
 
-        streamlit_app.markdown("---")
+        with button_bar_placeholder.container():
+            self._render_list_controls(streamlit_app, key, data_list)
 
-        with streamlit_app.container():
-            clear_col, add_col = streamlit_app.columns([1, 2])
+        with items_plaeholder.container():
+            if len(data_list) > 0:
+                for index, item in enumerate(data_list):
+                    output = self._render_list_item(
+                        streamlit_app, key, property["items"]["type"], item, index
+                    )
+                    if output is not None:
+                        object_list.append(output)
 
-            with clear_col:
-                if streamlit_app.button("Clear Items", key=key + "-clear-items"):
-                    current_list = []
-
-            with add_col:
-                if (
-                    streamlit_app.button("Add Item", key=key + "-add-item")
-                    and new_value is not None
-                ):
-                    current_list.append(new_value)
-
-        streamlit_app.write(current_list)
-
-        return current_list
+        return object_list
 
     def _render_object_list_input(
         self, streamlit_app: Any, key: str, property: Dict
@@ -710,35 +824,43 @@ class InputUI:
         if property.get("description"):
             streamlit_app.markdown(property.get("description"))
 
+        items_plaeholder = streamlit_app.empty()
         streamlit_app.markdown("---")
-
-        current_list = self._get_value(key)
-        if not current_list:
-            current_list = []
+        button_bar_placeholder = streamlit_app.empty()
 
         object_reference = schema_utils.resolve_reference(
             property["items"]["$ref"], self._schema_references
         )
-        input_data = self._render_object_input(streamlit_app, key, object_reference)
 
-        streamlit_app.markdown("---")
+        object_list = []
 
-        with streamlit_app.container():
-            clear_col, add_col = streamlit_app.columns([1, 2])
+        # Treat empty list as a session data "hit"
+        if self._get_value(key) is not None or self._get_value(key) == []:
+            data_list = self._get_value(key)
+        elif property.get("init_value"):
+            data_list = property.get("init_value")
+        else:
+            data_list = []
 
-            with clear_col:
-                if streamlit_app.button("Clear Items", key=key + "-clear-items"):
-                    current_list = []
+        with button_bar_placeholder.container():
+            self._render_list_controls(streamlit_app, key, data_list)
 
-            with add_col:
-                if (
-                    streamlit_app.button("Add Item", key=key + "-add-item")
-                    and input_data
-                ):
-                    current_list.append(input_data)
+        with items_plaeholder.container():
+            if len(data_list) > 0:
+                for index, item in enumerate(data_list):
+                    output = self._render_list_item(
+                        streamlit_app,
+                        key,
+                        object_reference["type"],
+                        item,
+                        index,
+                        object_reference=object_reference,
+                    )
+                    if output is not None:
+                        object_list.append(output)
+                    streamlit_app.markdown("---")
 
-        streamlit_app.write(current_list)
-        return current_list
+        return object_list
 
     def _render_property(self, streamlit_app: Any, key: str, property: Dict) -> Any:
         if schema_utils.is_single_enum_property(property, self._schema_references):
