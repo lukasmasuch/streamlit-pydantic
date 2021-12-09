@@ -698,9 +698,9 @@ class InputUI:
 
         label = "Item #" + str(index + 1)
         new_key = self._key + "_" + parent_key + "." + str(index)
-        item_plaeholder = streamlit_app.empty()
+        item_placeholder = streamlit_app.empty()
 
-        with item_plaeholder:
+        with item_placeholder:
 
             input_col, button_col = streamlit_app.columns([9, 2])
 
@@ -743,7 +743,7 @@ class InputUI:
                         return input_col.text_input(**value_kwargs)
             else:
                 # when the remove button is clicked clear the placeholder and return None
-                item_plaeholder.empty()
+                item_placeholder.empty()
                 return None
 
     def _render_list_controls(
@@ -784,7 +784,7 @@ class InputUI:
         if property.get("description"):
             streamlit_app.markdown(property.get("description"))
 
-        items_plaeholder = streamlit_app.empty()
+        items_placeholder = streamlit_app.empty()
         streamlit_app.markdown("---")
         button_bar_placeholder = streamlit_app.empty()
 
@@ -798,9 +798,9 @@ class InputUI:
             data_list = []
 
         with button_bar_placeholder.container():
-            self._render_list_controls(streamlit_app, key, data_list)
+            data_list = self._render_list_controls(streamlit_app, key, data_list)
 
-        with items_plaeholder.container():
+        with items_placeholder.container():
             if len(data_list) > 0:
                 for index, item in enumerate(data_list):
                     output = self._render_list_item(
@@ -822,7 +822,7 @@ class InputUI:
         if property.get("description"):
             streamlit_app.markdown(property.get("description"))
 
-        items_plaeholder = streamlit_app.empty()
+        items_placeholder = streamlit_app.empty()
         streamlit_app.markdown("---")
         button_bar_placeholder = streamlit_app.empty()
 
@@ -841,9 +841,9 @@ class InputUI:
             data_list = []
 
         with button_bar_placeholder.container():
-            self._render_list_controls(streamlit_app, key, data_list)
+            data_list = self._render_list_controls(streamlit_app, key, data_list)
 
-        with items_plaeholder.container():
+        with items_placeholder.container():
             if len(data_list) > 0:
                 for index, item in enumerate(data_list):
                     output = self._render_list_item(
