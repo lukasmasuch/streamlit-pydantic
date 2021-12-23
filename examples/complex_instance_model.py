@@ -21,6 +21,9 @@ class SelectionValue(str, Enum):
 class ExampleModel(BaseModel):
     some_number: float = 10.0  # Optional
     some_text: str = Field(..., description="A text property")
+    some_text_with_an_alias: str = Field(
+        ..., description="A text property with an alias", alias="some_alias"
+    )
     some_integer: int = Field(..., description="An integer property.")
     some_date: datetime.date = Field(..., description="A date.")
     some_time: datetime.time = Field(..., description="A time.")
@@ -61,6 +64,7 @@ class ExampleModel(BaseModel):
 instance = ExampleModel(
     some_number=999.99,
     some_text="Some INSTANCE text",
+    some_alias="Some INSTANCE alias text",
     some_integer=999,
     some_date=datetime.date(1999, 9, 9),
     some_time=datetime.time(9, 9, 16),
