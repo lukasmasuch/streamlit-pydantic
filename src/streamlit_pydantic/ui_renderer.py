@@ -146,11 +146,11 @@ class InputUI:
             # check if the input_class is an instance
             if isinstance(self._input_class, BaseModel):
                 instance_value = self._input_class.dict().get(property_key)
-                if not instance_value:
+                if instance_value in [None, ""]:
                     instance_value = self._input_class.dict(by_alias=True).get(
                         property_key
                     )
-                if instance_value:
+                if instance_value not in [None, ""]:
                     property["init_value"] = instance_value
 
             try:
