@@ -31,6 +31,12 @@ def is_single_string_property(property: Dict) -> bool:
     return property.get("type") == "string"
 
 
+def is_single_color_property(property: Dict) -> bool:
+    if property.get("type") != "string":
+        return False
+    return property.get("format") in ["color"]
+
+
 def is_single_datetime_property(property: Dict) -> bool:
     if property.get("type") != "string":
         return False

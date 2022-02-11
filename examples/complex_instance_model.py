@@ -4,6 +4,7 @@ from typing import Dict, List, Literal, Optional, Set
 
 import streamlit as st
 from pydantic import BaseModel, Field
+from pydantic.color import Color
 
 import streamlit_pydantic as sp
 
@@ -39,6 +40,7 @@ class ExampleModel(BaseModel):
         multiple_of=2,
         description="Number property with a limited range.",
     )
+    some_colour: Color
     single_selection: SelectionValue = Field(
         ..., description="Only select a single item from a set."
     )
@@ -73,6 +75,7 @@ instance = ExampleModel(
     integer_in_range=28,
     some_boolean=True,
     long_text="This is some really long text from the INSTANCE",
+    some_colour=Color("#fef"),
     single_selection=SelectionValue.FOO,
     multi_selection=[SelectionValue.FOO, SelectionValue.BAR],
     read_only_text="INSTANCE read only text",

@@ -418,6 +418,34 @@ class InputUI:
                 streamlit_kwargs["type"] = "password"
             return streamlit_app.text_input(**{**streamlit_kwargs, **overwrite_kwargs})
 
+    def _render_single_color_input(
+        self, streamlit_app: Any, key: str, property: Dict
+    ) -> Any:
+        streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
+        overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
+        if property.get("init_value"):
+            streamlit_kwargs["value"] = property.get("init_value").as_hex()
+        elif property.get("default"):
+            streamlit_kwargs["value"] = property.get("default").as_hex()
+        elif property.get("example"):
+            # TODO: also use example for other property types
+            # Use example as value if it is provided
+            streamlit_kwargs["value"] = property.get("example").as_hex()
+
+        if property.get("readOnly"):
+            # Read only property -> only show value
+            streamlit_app.code(streamlit_kwargs["value"])
+            return streamlit_kwargs["value"]
+
+        if property.get("format") == "text":
+            # Use text input if specified format is text
+            return streamlit_app.text_input(**{**streamlit_kwargs, **overwrite_kwargs})
+        else:
+            # Use color picker input for most situations
+            return streamlit_app.color_picker(
+                **{**streamlit_kwargs, **overwrite_kwargs}
+            )
+
     def _render_multi_enum_input(
         self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
@@ -1015,6 +1043,9 @@ class InputUI:
 
         if schema_utils.is_single_datetime_property(property):
             return self._render_single_datetime_input(streamlit_app, key, property)
+
+        if schema_utils.is_single_color_property(property):
+            return self._render_single_color_input(streamlit_app, key, property)
 
         if schema_utils.is_single_boolean_property(property):
             return self._render_single_boolean_input(streamlit_app, key, property)
