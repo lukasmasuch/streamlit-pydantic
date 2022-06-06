@@ -45,6 +45,9 @@ class ExampleModel(BaseModel):
     multi_selection: Set[SelectionValue] = Field(
         ..., description="Allows multiple items from a set."
     )
+    disabled_selection: SelectionValue = Field(
+        ..., readOnly=True, description="A read only field that is shown as disabled"
+    )
     read_only_text: str = Field(
         "Lorem ipsum dolor sit amet",
         description="This is a ready only text.",
@@ -74,6 +77,7 @@ instance = ExampleModel(
     some_boolean=True,
     long_text="This is some really long text from the INSTANCE",
     single_selection=SelectionValue.FOO,
+    disabled_selection=SelectionValue.BAR,
     multi_selection=[SelectionValue.FOO, SelectionValue.BAR],
     read_only_text="INSTANCE read only text",
     nested_object=OtherData(text="nested data INSTANCE text", integer=66),

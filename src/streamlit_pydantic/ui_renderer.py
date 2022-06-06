@@ -212,9 +212,15 @@ class InputUI:
         if label and self._lowercase_labels:
             label = label.lower()
 
+        disabled = False
+        if property.get("readOnly"):
+            # Read only property -> only show value
+            disabled = True
+
         streamlit_kwargs = {
             "label": label,
             "key": str(self._session_state.run_id) + "-" + str(self._key) + "-" + key,
+            "disabled": disabled
             # "on_change": detect_change, -> not supported for inside forms
             # "args": (key,),
         }
