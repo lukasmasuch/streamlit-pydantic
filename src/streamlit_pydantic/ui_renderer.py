@@ -458,9 +458,14 @@ class InputUI:
                 # Use default selection
                 pass
 
-        return streamlit_app.selectbox(
-            **{**streamlit_kwargs, "options": select_options, **overwrite_kwargs}
-        )
+        # if there is only one option then there is no choice for the user to be make
+        # so simply return the value (This is relevant for discriminator properties)
+        if len(select_options) == 1:
+            return select_options[0]
+        else:
+            return streamlit_app.selectbox(
+                **{**streamlit_kwargs, "options": select_options, **overwrite_kwargs}
+            )
 
     def _render_single_dict_input(
         self, streamlit_app: Any, key: str, property: Dict
@@ -535,6 +540,22 @@ class InputUI:
             property, self._schema_references
         )
 
+        # special handling when there are instance values and a discriminator property
+        # to differentiate between object types
+        if property.get("init_value") and property.get("discriminator"):
+            disc_prop = property["discriminator"]["propertyName"]
+            # find the index where the discriminator is equal to the init_value
+            ref_index = next(
+                i
+                for i, x in enumerate(reference_items)
+                if x["properties"][disc_prop]["enum"]
+                == [property["init_value"][disc_prop]]
+            )
+
+            # add any init_value properties to the corresponding reference item
+            reference_items[ref_index]["init_value"] = property["init_value"]
+            streamlit_kwargs["index"] = ref_index
+
         name_reference_mapping: Dict[str, Dict] = {}
 
         for reference in reference_items:
@@ -546,10 +567,13 @@ class InputUI:
             streamlit_app.markdown(streamlit_kwargs["help"])
 
         selected_reference = streamlit_app.selectbox(
-            key=streamlit_kwargs["key"],
-            label=streamlit_kwargs["label"] + " - Options",
-            options=name_reference_mapping.keys(),
+            **{
+                **streamlit_kwargs,
+                "label": streamlit_kwargs["label"] + " - Options",
+                "options": name_reference_mapping.keys(),
+            }
         )
+
         input_data = self._render_object_input(
             streamlit_app, key, name_reference_mapping[selected_reference]
         )
