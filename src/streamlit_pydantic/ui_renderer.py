@@ -5,7 +5,7 @@ import json
 import mimetypes
 import re
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Type, TypeVar
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, TypeVar
 
 import pandas as pd
 import streamlit as st
@@ -476,52 +476,38 @@ class InputUI:
         if property.get("description"):
             streamlit_app.markdown(property.get("description"))
 
+        items_placeholder = streamlit_app.empty()
         streamlit_app.markdown("---")
+        button_bar_placeholder = streamlit_app.empty()
 
-        current_dict = self._get_value(key)
-        if not current_dict:
-            current_dict = {}
+        if self._get_value(key) is not None or self._get_value(key) == {}:
+            data_dict = self._get_value(key)
+        elif property.get("init_value"):
+            data_dict = property.get("init_value")
+        else:
+            data_dict = {}
 
-        key_col, value_col = streamlit_app.columns(2)
+        with button_bar_placeholder.container():
+            data_dict = self._render_dict_controls(streamlit_app, key, data_dict)
 
-        with key_col:
-            updated_key = streamlit_app.text_input(
-                "Key", value="", key=key + "-new-key"
-            )
+        new_dict = {}
 
-        with value_col:
-            # TODO: also add boolean?
-            value_kwargs = {"label": "Value", "key": key + "-new-value"}
-            if property["additionalProperties"].get("type") == "integer":
-                value_kwargs["value"] = 0  # type: ignore
-                updated_value = streamlit_app.number_input(**value_kwargs)
-            elif property["additionalProperties"].get("type") == "number":
-                value_kwargs["value"] = 0.0  # type: ignore
-                value_kwargs["format"] = "%f"
-                updated_value = streamlit_app.number_input(**value_kwargs)
-            else:
-                value_kwargs["value"] = ""
-                updated_value = streamlit_app.text_input(**value_kwargs)
+        with items_placeholder.container():
 
-        streamlit_app.markdown("---")
+            for index, input_item in enumerate(data_dict.items()):
 
-        with streamlit_app.container():
-            clear_col, add_col = streamlit_app.columns([1, 2])
+                updated_key, updated_value = self._render_dict_item(
+                    streamlit_app,
+                    key,
+                    property["additionalProperties"].get("type"),
+                    input_item,
+                    index,
+                )
 
-            with clear_col:
-                if streamlit_app.button("Clear Items", key=key + "-clear-items"):
-                    current_dict = {}
+                if updated_key is not None and updated_value is not None:
+                    new_dict[updated_key] = updated_value
 
-            with add_col:
-                if (
-                    streamlit_app.button("Add Item", key=key + "-add-item")
-                    and updated_key
-                ):
-                    current_dict[updated_key] = updated_value
-
-        streamlit_app.write(current_dict)
-
-        return current_dict
+        return new_dict
 
     def _render_single_reference(
         self, streamlit_app: Any, key: str, property: Dict
@@ -732,9 +718,7 @@ class InputUI:
 
             input_col, button_col = streamlit_app.columns([9, 2])
 
-            # vertical spacers
-            button_col.markdown("")
-            button_col.markdown("")
+            button_col.markdown("##")
 
             remove_click = button_col.button("Remove", key=new_key + "-remove")
 
@@ -802,6 +786,80 @@ class InputUI:
                     data_list.append(None)
 
         return data_list
+
+    def _render_dict_item(
+        self,
+        streamlit_app,
+        parent_key: str,
+        of_type: str,
+        in_value: Tuple[str, Any],
+        index: int,
+    ):
+
+        label = "Item #" + str(index + 1)
+        new_key = self._key + "_" + parent_key + "." + str(index)
+        item_placeholder = streamlit_app.empty()
+
+        with item_placeholder.container():
+
+            key_col, value_col, button_col = streamlit_app.columns([4, 4, 2])
+
+            button_col.markdown("##")
+            remove_click = button_col.button("Remove", key=new_key + "-remove")
+            if not remove_click:
+                with key_col:
+                    updated_key = streamlit_app.text_input(
+                        "Key",
+                        value=in_value[0],
+                        key=new_key + "-new-key",
+                    )
+
+                with value_col:
+                    # TODO: also add boolean?
+                    value_kwargs = {
+                        "label": "Value",
+                        "key": new_key + "-new-value",
+                    }
+                    if of_type == "integer":
+                        value_kwargs["value"] = in_value[1] if in_value[1] else 0  # type: ignore
+                        updated_value = streamlit_app.number_input(**value_kwargs)
+                    elif of_type == "number":
+                        value_kwargs["value"] = in_value[1] if in_value[1] else 0.0  # type: ignore
+                        value_kwargs["format"] = "%f"
+                        updated_value = streamlit_app.number_input(**value_kwargs)
+                    else:
+                        value_kwargs["value"] = in_value[1]
+                        updated_value = streamlit_app.text_input(**value_kwargs)
+
+                    return updated_key, updated_value
+
+            else:
+                # when the remove button is clicked clear the placeholder and return None
+                item_placeholder.empty()
+                return None, None
+
+    def _render_dict_controls(
+        self,
+        streamlit_app,
+        key: str,
+        data_dict: Dict[str, Any],
+    ):
+
+        _, clear_col, add_col = streamlit_app.columns([7, 2, 2])
+
+        with clear_col:
+            if streamlit_app.button(
+                "Clear All", key=self._key + "_" + key + "-clear-all"
+            ):
+                data_dict = {}
+
+        with add_col:
+            if streamlit_app.button(
+                "Add Item", key=self._key + "_" + key + "-add-item"
+            ):
+                data_dict[""] = ""
+
+        return data_dict
 
     def _render_property_list_input(
         self, streamlit_app: Any, key: str, property: Dict

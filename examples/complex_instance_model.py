@@ -54,6 +54,7 @@ class ExampleModel(BaseModel):
         ...,
         description="Another object embedded into this model.",
     )
+    int_dict: Dict[str, int] = Field(..., description="Dict property with int values")
     int_list: List[int] = Field(..., description="List of int values")
     object_list: List[OtherData] = Field(
         ...,
@@ -76,6 +77,7 @@ instance = ExampleModel(
     multi_selection=[SelectionValue.FOO, SelectionValue.BAR],
     read_only_text="INSTANCE read only text",
     nested_object=OtherData(text="nested data INSTANCE text", integer=66),
+    int_dict={"key 1": 3, "key 2": 33, "key 3": 333},
     int_list=[9, 99, 999],
     object_list=[
         OtherData(text="object list INSTANCE item 1", integer=6),
