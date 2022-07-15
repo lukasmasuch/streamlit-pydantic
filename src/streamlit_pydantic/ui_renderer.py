@@ -424,13 +424,13 @@ class InputUI:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
         overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
         if property.get("init_value"):
-            streamlit_kwargs["value"] = property.get("init_value")
+            streamlit_kwargs["value"] = property.get("init_value").as_hex()
         elif property.get("default"):
-            streamlit_kwargs["value"] = property.get("default")
+            streamlit_kwargs["value"] = property.get("default").as_hex()
         elif property.get("example"):
             # TODO: also use example for other property types
             # Use example as value if it is provided
-            streamlit_kwargs["value"] = property.get("example")
+            streamlit_kwargs["value"] = property.get("example").as_hex()
 
         if property.get("readOnly"):
             # Read only property -> only show value
