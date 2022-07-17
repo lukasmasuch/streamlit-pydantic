@@ -127,6 +127,18 @@ class InputUI:
 
         properties_in_expander = []
 
+        # check if the input_class is an instance and build value dicts
+        if isinstance(self._input_class, BaseModel):
+            instance_dict = self._input_class.dict()
+            instance_dict_by_alias = self._input_class.dict()
+
+            for property_key in self._schema_properties.keys():
+                if instance_dict:
+                    instance_dict.get(property_key)
+        else:
+            instance_dict = None
+            instance_dict_by_alias = None
+
         for property_key in self._schema_properties.keys():
             streamlit_app = self._streamlit_container
             if property_key not in required_properties:
@@ -143,13 +155,11 @@ class InputUI:
                 # Set property key as fallback title
                 property["title"] = _name_to_title(property_key)
 
-            # check if the input_class is an instance
-            if isinstance(self._input_class, BaseModel):
-                instance_value = self._input_class.dict().get(property_key)
+            # if there are instance values, add them to the property dict
+            if instance_dict is not None:
+                instance_value = instance_dict.get(property_key)
                 if instance_value in [None, ""]:
-                    instance_value = self._input_class.dict(by_alias=True).get(
-                        property_key
-                    )
+                    instance_value = instance_dict_by_alias.get(property_key)
                 if instance_value not in [None, ""]:
                     property["init_value"] = instance_value
 
