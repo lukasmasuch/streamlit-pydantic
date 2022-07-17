@@ -320,7 +320,10 @@ class InputUI:
                 selected_time = None
                 date_col, time_col = self._streamlit_container.columns(2)
                 with date_col:
-                    date_kwargs = {"label": "Date", "key": key + "-date-input"}
+                    date_kwargs = {
+                        "label": "Date",
+                        "key": streamlit_kwargs.get("key") + "-date-input",
+                    }
                     if streamlit_kwargs.get("value"):
                         try:
                             date_kwargs["value"] = streamlit_kwargs.get(  # type: ignore
@@ -331,7 +334,10 @@ class InputUI:
                     selected_date = self._streamlit_container.date_input(**date_kwargs)
 
                 with time_col:
-                    time_kwargs = {"label": "Time", "key": key + "-time-input"}
+                    time_kwargs = {
+                        "label": "Time",
+                        "key": streamlit_kwargs.get("key") + "-time-input",
+                    }
                     if streamlit_kwargs.get("value"):
                         try:
                             time_kwargs["value"] = streamlit_kwargs.get(  # type: ignore
