@@ -130,11 +130,7 @@ class InputUI:
         # check if the input_class is an instance and build value dicts
         if isinstance(self._input_class, BaseModel):
             instance_dict = self._input_class.dict()
-            instance_dict_by_alias = self._input_class.dict()
-
-            for property_key in self._schema_properties.keys():
-                if instance_dict:
-                    instance_dict.get(property_key)
+            instance_dict_by_alias = self._input_class.dict(by_alias=True)
         else:
             instance_dict = None
             instance_dict_by_alias = None
@@ -162,6 +158,9 @@ class InputUI:
                     instance_value = instance_dict_by_alias.get(property_key)
                 if instance_value not in [None, ""]:
                     property["init_value"] = instance_value
+                    property["instance_class"] = str(
+                        type(getattr(self._input_class, property_key))
+                    )
 
             try:
                 value = self._render_property(streamlit_app, property_key, property)
@@ -550,6 +549,14 @@ class InputUI:
             )
 
             # add any init_value properties to the corresponding reference item
+            reference_items[ref_index]["init_value"] = property["init_value"]
+            streamlit_kwargs["index"] = ref_index
+        elif property.get("init_value") and property.get("instance_class"):
+            ref_index = next(
+                i
+                for i, x in enumerate(reference_items)
+                if x["title"] in property["instance_class"]
+            )
             reference_items[ref_index]["init_value"] = property["init_value"]
             streamlit_kwargs["index"] = ref_index
 
