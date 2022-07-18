@@ -655,18 +655,25 @@ class InputUI:
                 property["exclusiveMaximum"] - streamlit_kwargs["step"]
             )
 
-        if property.get("init_value") is not None:
-            streamlit_kwargs["value"] = number_transform(property.get("init_value"))
-        elif property.get("default") is not None:
-            streamlit_kwargs["value"] = number_transform(property.get("default"))  # type: ignore
-        else:
-            if "min_value" in streamlit_kwargs:
-                streamlit_kwargs["value"] = streamlit_kwargs["min_value"]
-            elif number_transform == int:
-                streamlit_kwargs["value"] = 0
+        if self._session_state.get(streamlit_kwargs["key"]) is None:
+            if property.get("init_value") is not None:
+                streamlit_kwargs["value"] = number_transform(property.get("init_value"))
+            elif property.get("default") is not None:
+                streamlit_kwargs["value"] = number_transform(property.get("default"))  # type: ignore
             else:
-                # Set default value to step
-                streamlit_kwargs["value"] = number_transform(streamlit_kwargs["step"])
+                if "min_value" in streamlit_kwargs:
+                    streamlit_kwargs["value"] = streamlit_kwargs["min_value"]
+                elif number_transform == int:
+                    streamlit_kwargs["value"] = 0
+                else:
+                    # Set default value to step
+                    streamlit_kwargs["value"] = number_transform(
+                        streamlit_kwargs["step"]
+                    )
+        else:
+            streamlit_kwargs["value"] = number_transform(
+                self._session_state.get(streamlit_kwargs["key"])
+            )
 
         if "min_value" in streamlit_kwargs and "max_value" in streamlit_kwargs:
             # TODO: Only if less than X steps
@@ -755,18 +762,32 @@ class InputUI:
 
                     elif of_type == "integer":
                         value_kwargs["label"] = label
-                        value_kwargs["value"] = value if value else 0  # type: ignore
+                        if self._session_state.get(new_key) is None:
+                            value_kwargs["value"] = value if value else 0  # type: ignore
+                        else:
+                            value_kwargs["value"] = int(
+                                self._session_state.get(new_key)
+                            )
                         value_kwargs["key"] = new_key
+                        value_kwargs["format"] = "%i"
                         return input_col.number_input(**value_kwargs)
                     elif of_type == "number":
                         value_kwargs["label"] = label
-                        value_kwargs["value"] = value if value else 0.0  # type: ignore
+                        if self._session_state.get(new_key) is None:
+                            value_kwargs["value"] = value if value else 0.0  # type: ignore
+                        else:
+                            value_kwargs["value"] = float(
+                                self._session_state.get(new_key)
+                            )
                         value_kwargs["format"] = "%f"
                         value_kwargs["key"] = new_key
                         return input_col.number_input(**value_kwargs)
                     else:
                         value_kwargs["label"] = label
-                        value_kwargs["value"] = value if value else ""
+                        if self._session_state.get(new_key) is None:
+                            value_kwargs["value"] = value if value else ""
+                        else:
+                            value_kwargs["value"] = self._session_state.get(new_key)
                         value_kwargs["key"] = new_key
                         return input_col.text_input(**value_kwargs)
             else:
@@ -820,31 +841,53 @@ class InputUI:
 
             key_col, value_col, button_col = streamlit_app.columns([4, 4, 2])
 
+            dict_key = in_value[0]
+            dict_value = in_value[1]
+
+            dict_key_key = new_key + "-key"
+            dict_value_key = new_key + "-value"
+
             button_col.markdown("##")
             remove_click = button_col.button("Remove", key=new_key + "-remove")
             if not remove_click:
                 with key_col:
                     updated_key = streamlit_app.text_input(
                         "Key",
-                        value=in_value[0],
-                        key=new_key + "-new-key",
+                        value=dict_key,
+                        key=dict_key_key,
                     )
 
                 with value_col:
                     # TODO: also add boolean?
                     value_kwargs = {
                         "label": "Value",
-                        "key": new_key + "-new-value",
+                        "key": dict_value_key,
                     }
                     if of_type == "integer":
-                        value_kwargs["value"] = in_value[1] if in_value[1] else 0  # type: ignore
+                        if self._session_state.get(dict_value_key) is None:
+                            value_kwargs["value"] = dict_value if dict_value else 0  # type: ignore
+                        else:
+                            value_kwargs["value"] = int(
+                                self._session_state.get(dict_value_key)
+                            )
+                        value_kwargs["format"] = "%i"
                         updated_value = streamlit_app.number_input(**value_kwargs)
                     elif of_type == "number":
-                        value_kwargs["value"] = in_value[1] if in_value[1] else 0.0  # type: ignore
+                        if self._session_state.get(dict_value_key) is None:
+                            value_kwargs["value"] = dict_value if dict_value else 0.0  # type: ignore
+                        else:
+                            value_kwargs["value"] = float(
+                                self._session_state.get(dict_value_key)
+                            )
                         value_kwargs["format"] = "%f"
                         updated_value = streamlit_app.number_input(**value_kwargs)
                     else:
-                        value_kwargs["value"] = in_value[1]
+                        if self._session_state.get(dict_value_key) is None:
+                            value_kwargs["value"] = dict_value
+                        else:
+                            value_kwargs["value"] = self._session_state.get(
+                                dict_value_key
+                            )
                         updated_value = streamlit_app.text_input(**value_kwargs)
 
                     return updated_key, updated_value
