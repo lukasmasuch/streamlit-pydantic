@@ -492,10 +492,6 @@ class InputUI:
         if property.get("description"):
             streamlit_app.markdown(property.get("description"))
 
-        items_placeholder = streamlit_app.empty()
-        streamlit_app.markdown("---")
-        button_bar_placeholder = streamlit_app.empty()
-
         if self._get_value(key) is not None or self._get_value(key) == {}:
             data_dict = self._get_value(key)
         elif property.get("init_value"):
@@ -503,25 +499,24 @@ class InputUI:
         else:
             data_dict = {}
 
-        with button_bar_placeholder.container():
-            data_dict = self._render_dict_controls(streamlit_app, key, data_dict)
+        data_dict = self._render_dict_controls(streamlit_app, key, data_dict)
 
         new_dict = {}
 
-        with items_placeholder.container():
+        for index, input_item in enumerate(data_dict.items()):
 
-            for index, input_item in enumerate(data_dict.items()):
+            updated_key, updated_value = self._render_dict_item(
+                streamlit_app,
+                key,
+                property["additionalProperties"].get("type"),
+                input_item,
+                index,
+            )
 
-                updated_key, updated_value = self._render_dict_item(
-                    streamlit_app,
-                    key,
-                    property["additionalProperties"].get("type"),
-                    input_item,
-                    index,
-                )
+            if updated_key is not None and updated_value is not None:
+                new_dict[updated_key] = updated_value
 
-                if updated_key is not None and updated_value is not None:
-                    new_dict[updated_key] = updated_value
+        streamlit_app.markdown("---")
 
         return new_dict
 
@@ -929,10 +924,6 @@ class InputUI:
         if property.get("description"):
             streamlit_app.markdown(property.get("description"))
 
-        items_placeholder = streamlit_app.empty()
-        streamlit_app.markdown("---")
-        button_bar_placeholder = streamlit_app.empty()
-
         object_list = []
 
         if self._get_value(key) is not None or self._get_value(key) == []:
@@ -942,17 +933,17 @@ class InputUI:
         else:
             data_list = []
 
-        with button_bar_placeholder.container():
-            data_list = self._render_list_controls(streamlit_app, key, data_list)
+        data_list = self._render_list_controls(streamlit_app, key, data_list)
 
-        with items_placeholder.container():
-            if len(data_list) > 0:
-                for index, item in enumerate(data_list):
-                    output = self._render_list_item(
-                        streamlit_app, key, property["items"]["type"], item, index
-                    )
-                    if output is not None:
-                        object_list.append(output)
+        if len(data_list) > 0:
+            for index, item in enumerate(data_list):
+                output = self._render_list_item(
+                    streamlit_app, key, property["items"]["type"], item, index
+                )
+                if output is not None:
+                    object_list.append(output)
+
+        streamlit_app.markdown("---")
 
         return object_list
 
@@ -966,10 +957,6 @@ class InputUI:
         streamlit_app.subheader(property.get("title"))
         if property.get("description"):
             streamlit_app.markdown(property.get("description"))
-
-        items_placeholder = streamlit_app.empty()
-        streamlit_app.markdown("---")
-        button_bar_placeholder = streamlit_app.empty()
 
         object_reference = schema_utils.resolve_reference(
             property["items"]["$ref"], self._schema_references
@@ -985,23 +972,22 @@ class InputUI:
         else:
             data_list = []
 
-        with button_bar_placeholder.container():
-            data_list = self._render_list_controls(streamlit_app, key, data_list)
+        data_list = self._render_list_controls(streamlit_app, key, data_list)
 
-        with items_placeholder.container():
-            if len(data_list) > 0:
-                for index, item in enumerate(data_list):
-                    output = self._render_list_item(
-                        streamlit_app,
-                        key,
-                        object_reference["type"],
-                        item,
-                        index,
-                        object_reference=object_reference,
-                    )
-                    if output is not None:
-                        object_list.append(output)
-                    streamlit_app.markdown("---")
+        if len(data_list) > 0:
+            for index, item in enumerate(data_list):
+                output = self._render_list_item(
+                    streamlit_app,
+                    key,
+                    object_reference["type"],
+                    item,
+                    index,
+                    object_reference=object_reference,
+                )
+                if output is not None:
+                    object_list.append(output)
+
+                streamlit_app.markdown("---")
 
         return object_list
 
