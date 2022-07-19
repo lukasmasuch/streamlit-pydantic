@@ -1,24 +1,28 @@
-from typing import Union
+from typing import Literal, Optional, Union
 
 import streamlit as st
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 import streamlit_pydantic as sp
 
 
 class PostalAddress(BaseModel):
+    contact_type: Literal["postal"]
     street: str
     city: str
     house: int
 
 
 class EmailAddress(BaseModel):
+    contact_type: Literal["email"]
     email: str
     send_news: bool
 
 
 class ContactMethod(BaseModel):
-    contact: Union[PostalAddress, EmailAddress]
+    contact: Optional[Union[PostalAddress, EmailAddress]] = Field(
+        ..., discriminator="contact_type"
+    )
     text: str
 
 
@@ -30,7 +34,9 @@ if input_data:
 
 st.header("Form inputs from instance")
 instance = ContactMethod(
-    contact=EmailAddress(email="instance@example.com", send_news=True),
+    contact=EmailAddress(
+        contact_type="email", email="instance@example.com", send_news=True
+    ),
     text="instance text",
 )
 
