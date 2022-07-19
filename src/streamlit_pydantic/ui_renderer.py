@@ -743,7 +743,7 @@ class InputUI:
 
         with item_placeholder:
 
-            input_col, button_col = streamlit_app.columns([9, 2])
+            input_col, button_col = streamlit_app.columns([8, 3])
 
             button_col.markdown("##")
 
@@ -806,7 +806,7 @@ class InputUI:
         data_list: List[Any],
     ):
 
-        _, clear_col, add_col = streamlit_app.columns([7, 2, 2])
+        add_col, clear_col, _ = streamlit_app.columns(3)
 
         with clear_col:
             if streamlit_app.button(
@@ -843,7 +843,7 @@ class InputUI:
 
         with item_placeholder.container():
 
-            key_col, value_col, button_col = streamlit_app.columns([4, 4, 2])
+            key_col, value_col, button_col = streamlit_app.columns([4, 4, 3])
 
             dict_key = in_value[0]
             dict_value = in_value[1]
@@ -908,7 +908,7 @@ class InputUI:
         data_dict: Dict[str, Any],
     ):
 
-        _, clear_col, add_col = streamlit_app.columns([7, 2, 2])
+        add_col, clear_col, _ = streamlit_app.columns(3)
 
         with clear_col:
             if streamlit_app.button(
