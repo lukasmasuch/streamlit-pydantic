@@ -158,9 +158,11 @@ class InputUI:
                     instance_value = instance_dict_by_alias.get(property_key)
                 if instance_value not in [None, ""]:
                     property["init_value"] = instance_value
-                    property["instance_class"] = str(
-                        type(getattr(self._input_class, property_key))
-                    )
+                    # keep a reference of the original class to help with non-discriminated unions
+                    # TODO: This will not succeed for attributes that have an alias
+                    attr = getattr(self._input_class, property_key, None)
+                    if attr is not None:
+                        property["instance_class"] = str(type(attr))
 
             try:
                 value = self._render_property(streamlit_app, property_key, property)
