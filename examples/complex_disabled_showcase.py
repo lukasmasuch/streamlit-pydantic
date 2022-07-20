@@ -19,7 +19,7 @@ class OtherData(BaseModel):
     integer: int
 
 
-class ShowcaseModel(BaseModel):
+class DisabledModel(BaseModel):
     short_text: str = Field(
         ..., readOnly=True, max_length=60, description="Short text property"
     )
@@ -62,7 +62,7 @@ class ShowcaseModel(BaseModel):
     )
     read_only_text: str = Field(
         "Lorem ipsum dolor sit amet",
-        description="This is a ready only text.",
+        description="This is a read only text.",
         readOnly=True,
     )
     file_list: Optional[List[FileContent]] = Field(
@@ -109,9 +109,37 @@ class ShowcaseModel(BaseModel):
     )
 
 
+instance = DisabledModel(
+    some_number=999.99,
+    short_text="Some INSTANCE text",
+    password="$uper_$ecret!",
+    some_alias="Some INSTANCE alias text",
+    positive_integer=20,
+    some_date=datetime.date(1999, 9, 9),
+    some_time=datetime.time(9, 9, 16),
+    some_datetime=datetime.datetime(1999, 9, 9),
+    integer_in_range=28,
+    some_boolean=True,
+    long_text="This is some really long text from the INSTANCE",
+    single_selection=SelectionValue.FOO,
+    disabled_selection=SelectionValue.BAR,
+    multi_selection=[SelectionValue.FOO, SelectionValue.BAR],
+    read_only_text="INSTANCE read only text",
+    single_object=OtherData(text="nested data INSTANCE text", integer=66),
+    string_dict={"key 1": "A", "key 2": "B", "key 3": "C"},
+    float_dict={"key A": 9.99, "key B": 66.0, "key C": -55.8},
+    int_list=[9, 99, 999],
+    string_list=["a", "ab", "abc"],
+    object_list=[
+        OtherData(text="object list INSTANCE item 1", integer=6),
+        OtherData(text="object list INSTANCE item 2", integer=99),
+    ],
+)
+
+
 session_data = sp.pydantic_input(
-    key="my_input",
-    model=ShowcaseModel,
+    key="my_disabled_input",
+    model=instance,
 )
 
 with st.expander("Current Input State", expanded=False):

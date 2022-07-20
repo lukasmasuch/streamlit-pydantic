@@ -506,7 +506,15 @@ class InputUI:
         else:
             data_dict = {}
 
-        data_dict = self._render_dict_controls(streamlit_app, key, data_dict)
+        add_col, clear_col, _ = streamlit_app.columns(3)
+
+        add_col = add_col.empty()
+
+        if self._clear_button_allowed(property):
+            data_dict = self._render_dict_add_button(key, add_col, data_dict)
+
+        if self._clear_button_allowed(property):
+            data_dict = self._render_dict_clear_button(key, clear_col, data_dict)
 
         new_dict = {}
 
@@ -518,6 +526,7 @@ class InputUI:
                 property["additionalProperties"].get("type"),
                 input_item,
                 index,
+                property,
             )
 
             if updated_key is not None and updated_value is not None:
@@ -709,6 +718,8 @@ class InputUI:
                     property_key
                 )
 
+            new_property["readOnly"] = property.get("readOnly", False)
+
             value = self._render_property(streamlit_app, full_key, new_property)
             if not self._is_value_ignored(property_key, value):
                 object_inputs[property_key] = value
@@ -727,10 +738,10 @@ class InputUI:
             property, self._schema_references
         )
 
-        if property.get("init_value"):
-            object_reference["init_value"] = property.get("init_value")
-        else:
-            object_reference["init_value"] = None
+        object_reference["init_value"] = property.get("init_value", None)
+
+        object_reference["readOnly"] = property.get("readOnly", None)
+
         return self._render_object_input(streamlit_app, key, object_reference)
 
     def _render_list_item(
@@ -740,6 +751,7 @@ class InputUI:
         of_type: str,
         value,
         index: int,
+        property: Dict[str, Any],
         object_reference=None,
     ):
 
@@ -753,12 +765,17 @@ class InputUI:
 
             button_col.markdown("##")
 
-            remove_click = button_col.button("Remove", key=new_key + "-remove")
+            if self._remove_button_allowed(index, property):
+                remove = False
+            else:
+                remove = button_col.button("Remove", key=new_key + "-remove")
 
             value_kwargs = {}
 
+            value_kwargs["disabled"] = property.get("readOnly", False)
+
             #  insert an input field when the remove button has not been clicked
-            if not remove_click:
+            if not remove:
                 with input_col:
                     if of_type == "object":
 
@@ -767,9 +784,10 @@ class InputUI:
                         new_object_reference["title"] = label
 
                         return self._render_object_input(
-                            streamlit_app, new_key, new_object_reference
+                            streamlit_app,
+                            new_key,
+                            new_object_reference,
                         )
-
                     elif of_type == "integer":
                         value_kwargs["label"] = label
                         if self._session_state.get(new_key) is None:
@@ -805,35 +823,6 @@ class InputUI:
                 item_placeholder.empty()
                 return None
 
-    def _render_list_controls(
-        self,
-        streamlit_app,
-        key: str,
-        data_list: List[Any],
-    ):
-
-        add_col, clear_col, _ = streamlit_app.columns(3)
-
-        with clear_col:
-            if streamlit_app.button(
-                "Clear All", key=self._key + "_" + key + "-clear-all"
-            ):
-                data_list = []
-
-        with add_col:
-            if streamlit_app.button(
-                "Add Item", key=self._key + "_" + key + "-add-item"
-            ):
-
-                if len(data_list) > 0:
-                    # if the list has items, make a copy of the last item
-                    data_list.append(data_list[-1])
-                else:
-                    # If the list is empty, add a None to trigger a new empty item
-                    data_list.append(None)
-
-        return data_list
-
     def _render_dict_item(
         self,
         streamlit_app,
@@ -841,11 +830,14 @@ class InputUI:
         of_type: str,
         in_value: Tuple[str, Any],
         index: int,
+        property: Dict[str, Any],
     ):
 
         label = "Item #" + str(index + 1)
         new_key = self._key + "_" + parent_key + "." + str(index)
         item_placeholder = streamlit_app.empty()
+
+        disable_widgets = property.get("readOnly", False)
 
         with item_placeholder.container():
 
@@ -858,13 +850,19 @@ class InputUI:
             dict_value_key = new_key + "-value"
 
             button_col.markdown("##")
-            remove_click = button_col.button("Remove", key=new_key + "-remove")
-            if not remove_click:
+
+            if self._remove_button_allowed(index, property):
+                remove = False
+            else:
+                remove = button_col.button("Remove", key=new_key + "-remove")
+
+            if not remove:
                 with key_col:
                     updated_key = streamlit_app.text_input(
                         "Key",
                         value=dict_key,
                         key=dict_key_key,
+                        disabled=disable_widgets,
                     )
 
                 with value_col:
@@ -872,6 +870,7 @@ class InputUI:
                     value_kwargs = {
                         "label": "Value",
                         "key": dict_value_key,
+                        "disabled": disable_widgets,
                     }
                     if of_type == "integer":
                         if self._session_state.get(dict_value_key) is None:
@@ -907,29 +906,6 @@ class InputUI:
                 item_placeholder.empty()
                 return None, None
 
-    def _render_dict_controls(
-        self,
-        streamlit_app,
-        key: str,
-        data_dict: Dict[str, Any],
-    ):
-
-        add_col, clear_col, _ = streamlit_app.columns(3)
-
-        with clear_col:
-            if streamlit_app.button(
-                "Clear All", key=self._key + "_" + key + "-clear-all"
-            ):
-                data_dict = {}
-
-        with add_col:
-            if streamlit_app.button(
-                "Add Item", key=self._key + "_" + key + "-add-item"
-            ):
-                data_dict[""] = ""
-
-        return data_dict
-
     def _render_property_list_input(
         self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
@@ -948,25 +924,132 @@ class InputUI:
         else:
             data_list = []
 
-        data_list = self._render_list_controls(streamlit_app, key, data_list)
+        add_col, clear_col, _ = streamlit_app.columns(3)
+
+        add_col = add_col.empty()
+
+        self._render_list_add_button(key, add_col, data_list)
+
+        if self._clear_button_allowed(property):
+            self._render_list_clear_button(key, clear_col, data_list)
 
         if len(data_list) > 0:
             for index, item in enumerate(data_list):
                 output = self._render_list_item(
-                    streamlit_app, key, property["items"]["type"], item, index
+                    streamlit_app,
+                    key,
+                    property["items"]["type"],
+                    item,
+                    index,
+                    property,
+                    len(object_list),
                 )
                 if output is not None:
                     object_list.append(output)
+
+            if not self._add_button_allowed(len(object_list), property):
+                add_col = add_col.empty()
 
         streamlit_app.markdown("---")
 
         return object_list
 
+    def _add_button_allowed(
+        self,
+        index: int,
+        property: Dict[str, Any],
+    ):
+        add_allowed = not (
+            (property.get("readOnly", False) is True)
+            or ((index) >= property.get("maxItems", 1000))
+        )
+
+        return add_allowed
+
+    def _remove_button_allowed(
+        self,
+        index: int,
+        property: Dict[str, Any],
+    ):
+        remove_allowed = (property.get("readOnly") is True) or (
+            (index + 1) <= property.get("minItems", 0)
+        )
+
+        return remove_allowed
+
+    def _clear_button_allowed(
+        self,
+        property: Dict[str, Any],
+    ):
+        clear_allowed = not (
+            (property.get("readOnly", False) is True)
+            or (property.get("minItems", 0) > 0)
+        )
+
+        return clear_allowed
+
+    def _render_list_add_button(
+        self,
+        key: str,
+        streamlit_app,
+        data_list,
+    ):
+        if streamlit_app.button(
+            "Add Item",
+            key=self._key + "_" + key + "list-add-item",
+        ):
+            if len(data_list) > 0:
+                data_list.append(data_list[-1])
+            else:
+                data_list.append(None)
+
+        return data_list
+
+    def _render_list_clear_button(
+        self,
+        key: str,
+        streamlit_app,
+        data_list,
+    ):
+        if streamlit_app.button(
+            "Clear All",
+            key=self._key + "_" + key + "-list_clear-all",
+        ):
+            data_list = []
+
+        return data_list
+
+    def _render_dict_add_button(
+        self,
+        key: str,
+        streamlit_app,
+        data_dict,
+    ):
+        if streamlit_app.button(
+            "Add Item",
+            key=self._key + "_" + key + "-add-item",
+        ):
+            data_dict[""] = ""
+
+        return data_dict
+
+    def _render_dict_clear_button(
+        self,
+        key: str,
+        streamlit_app,
+        data_dict,
+    ):
+        if streamlit_app.button(
+            "Clear All",
+            key=self._key + "_" + key + "-clear-all",
+        ):
+            data_dict = {}
+
+        return data_dict
+
     def _render_object_list_input(
         self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
-
-        # TODO: support max_items, and min_items properties
 
         # Add title and subheader
         streamlit_app.subheader(property.get("title"))
@@ -987,7 +1070,14 @@ class InputUI:
         else:
             data_list = []
 
-        data_list = self._render_list_controls(streamlit_app, key, data_list)
+        add_col, clear_col, _ = streamlit_app.columns(3)
+
+        add_col = add_col.empty()
+
+        self._render_list_add_button(key, add_col, data_list)
+
+        if self._clear_button_allowed(property):
+            self._render_list_clear_button(key, clear_col, data_list)
 
         if len(data_list) > 0:
             for index, item in enumerate(data_list):
@@ -997,12 +1087,16 @@ class InputUI:
                     object_reference["type"],
                     item,
                     index,
+                    property,
                     object_reference=object_reference,
                 )
                 if output is not None:
                     object_list.append(output)
 
                 streamlit_app.markdown("---")
+
+            if not self._add_button_allowed(len(object_list), property):
+                add_col = add_col.empty()
 
         return object_list
 

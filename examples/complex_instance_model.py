@@ -57,10 +57,22 @@ class ExampleModel(BaseModel):
         ...,
         description="Another object embedded into this model.",
     )
-    int_dict: Dict[str, int] = Field(..., description="Dict property with int values")
-    int_list: List[int] = Field(..., description="List of int values")
+    int_dict: Dict[str, int] = Field(
+        ...,
+        description="Dict property with int values",
+        gt=0,
+    )
+    int_list: List[int] = Field(
+        ...,
+        description="List of int values",
+        max_items=4,
+        min_items=2,
+        gt=0,
+    )
     object_list: List[OtherData] = Field(
         ...,
+        max_items=5,
+        min_items=1,
         description="A list of objects embedded into this model.",
     )
 
@@ -89,9 +101,7 @@ instance = ExampleModel(
     ],
 )
 
-# col1, col2 = st.columns(2)
 
-# with col1:
 st.header("Form inputs from model")
 data = sp.pydantic_input(key="my_input_model", model=ExampleModel)
 with st.expander("Current Input State", expanded=False):
