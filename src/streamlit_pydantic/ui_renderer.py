@@ -168,7 +168,7 @@ class InputUI:
                 value = self._render_property(streamlit_app, property_key, property)
                 if not self._is_value_ignored(property_key, value):
                     self._store_value(property_key, value)
-            except Exception as e:
+            except Exception:
                 pass
 
         if properties_in_expander:
@@ -327,6 +327,7 @@ class InputUI:
                 selected_date = None
                 selected_time = None
 
+                # columns can not be used within a collection
                 if property.get("is_item"):
                     date_col = self._streamlit_container.container()
                     time_col = self._streamlit_container.container()
@@ -512,6 +513,8 @@ class InputUI:
         else:
             data_dict = {}
 
+        is_object = True if property["additionalProperties"].get("$ref") else False
+
         add_col, clear_col, _ = streamlit_app.columns(3)
 
         add_col = add_col.empty()
@@ -529,7 +532,6 @@ class InputUI:
             updated_key, updated_value = self._render_dict_item(
                 streamlit_app,
                 key,
-                property["additionalProperties"].get("type"),
                 input_item,
                 index,
                 property,
@@ -538,7 +540,11 @@ class InputUI:
             if updated_key is not None and updated_value is not None:
                 new_dict[updated_key] = updated_value
 
-        streamlit_app.markdown("---")
+            if is_object:
+                streamlit_app.markdown("---")
+
+        if not is_object:
+            streamlit_app.markdown("---")
 
         return new_dict
 
@@ -734,6 +740,7 @@ class InputUI:
             value = self._render_property(streamlit_app, full_key, new_property)
             if not self._is_value_ignored(property_key, value):
                 object_inputs[property_key] = value
+
         return object_inputs
 
     def _render_single_object_input(
@@ -765,7 +772,6 @@ class InputUI:
         value,
         index: int,
         property: Dict[str, Any],
-        object_reference=None,
     ):
 
         label = "Item #" + str(index + 1)
@@ -804,13 +810,11 @@ class InputUI:
         self,
         streamlit_app,
         parent_key: str,
-        of_type: str,
         in_value: Tuple[str, Any],
         index: int,
         property: Dict[str, Any],
     ):
 
-        label = "Item #" + str(index + 1)
         new_key = self._key + "-" + parent_key + "." + str(index)
         item_placeholder = streamlit_app.empty()
 
@@ -864,7 +868,7 @@ class InputUI:
         self,
         index: int,
         property: Dict[str, Any],
-    ):
+    ) -> bool:
         add_allowed = not (
             (property.get("readOnly", False) is True)
             or ((index) >= property.get("maxItems", 1000))
@@ -876,7 +880,7 @@ class InputUI:
         self,
         index: int,
         property: Dict[str, Any],
-    ):
+    ) -> bool:
         remove_allowed = (property.get("readOnly") is True) or (
             (index + 1) <= property.get("minItems", 0)
         )
@@ -886,7 +890,7 @@ class InputUI:
     def _clear_button_allowed(
         self,
         property: Dict[str, Any],
-    ):
+    ) -> bool:
         clear_allowed = not (
             (property.get("readOnly", False) is True)
             or (property.get("minItems", 0) > 0)
@@ -952,10 +956,7 @@ class InputUI:
         if property.get("description"):
             streamlit_app.markdown(property.get("description"))
 
-        if property["items"].get("$ref"):
-            is_object = True
-        else:
-            is_object = False
+        is_object = True if property["items"].get("$ref") else False
 
         object_list = []
 
@@ -974,7 +975,7 @@ class InputUI:
         self._render_list_add_button(key, add_col, data_list)
 
         if self._clear_button_allowed(property):
-            self._render_list_clear_button(key, clear_col, data_list)
+            data_list = self._render_list_clear_button(key, clear_col, data_list)
 
         if len(data_list) > 0:
             for index, item in enumerate(data_list):
