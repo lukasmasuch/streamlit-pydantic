@@ -60,19 +60,26 @@ class ExampleModel(BaseModel):
     int_dict: Dict[str, int] = Field(
         ...,
         description="Dict property with int values",
-        gt=0,
+        gt=-4,
+    )
+    date_dict: Dict[str, datetime.datetime] = Field(
+        ...,
+        description="Dict property with date values",
+    )
+    bool_dict: Dict[str, bool] = Field(
+        ...,
+        description="Dict property with bool values",
     )
     int_list: List[int] = Field(
         ...,
         description="List of int values",
         max_items=4,
         min_items=2,
-        gt=0,
+        gt=2,
     )
     object_list: List[OtherData] = Field(
         ...,
         max_items=5,
-        min_items=1,
         description="A list of objects embedded into this model.",
     )
 
@@ -93,7 +100,9 @@ instance = ExampleModel(
     multi_selection=[SelectionValue.FOO, SelectionValue.BAR],
     read_only_text="INSTANCE read only text",
     nested_object=OtherData(text="nested data INSTANCE text", integer=66),
-    int_dict={"key 1": 3, "key 2": 33, "key 3": 333},
+    int_dict={"key 1": 33, "key 2": 33, "key 3": 333},
+    date_dict={"date_key 1": datetime.datetime(1999, 9, 9)},
+    bool_dict={"bool_key 1": True},
     int_list=[9, 99, 999],
     object_list=[
         OtherData(text="object list INSTANCE item 1", integer=6),

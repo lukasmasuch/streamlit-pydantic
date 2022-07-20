@@ -110,17 +110,15 @@ class DisabledModel(BaseModel):
 
 
 instance = DisabledModel(
-    some_number=999.99,
     short_text="Some INSTANCE text",
     password="$uper_$ecret!",
-    some_alias="Some INSTANCE alias text",
+    long_text="This is some really long text from the INSTANCE",
     positive_integer=20,
+    integer_in_range=28,
     some_date=datetime.date(1999, 9, 9),
     some_time=datetime.time(9, 9, 16),
     some_datetime=datetime.datetime(1999, 9, 9),
-    integer_in_range=28,
     some_boolean=True,
-    long_text="This is some really long text from the INSTANCE",
     single_selection=SelectionValue.FOO,
     disabled_selection=SelectionValue.BAR,
     multi_selection=[SelectionValue.FOO, SelectionValue.BAR],
