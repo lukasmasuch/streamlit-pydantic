@@ -336,7 +336,7 @@ class InputUI:
                 with date_col:
                     date_kwargs = {
                         "label": "Date",
-                        "key": streamlit_kwargs.get("key") + "-date-input",
+                        "key": f"{streamlit_kwargs.get('key')}-date-input",
                     }
                     if streamlit_kwargs.get("value"):
                         try:
@@ -350,7 +350,7 @@ class InputUI:
                 with time_col:
                     time_kwargs = {
                         "label": "Time",
-                        "key": streamlit_kwargs.get("key") + "-time-input",
+                        "key": f"{streamlit_kwargs.get('key')}-time-input",
                     }
                     if streamlit_kwargs.get("value"):
                         try:
@@ -693,9 +693,9 @@ class InputUI:
 
         if self._session_state.get(streamlit_kwargs["key"]) is None:
             if property.get("init_value") is not None:
-                streamlit_kwargs["value"] = number_transform(property.get("init_value"))
+                streamlit_kwargs["value"] = number_transform(property["init_value"])
             elif property.get("default") is not None:
-                streamlit_kwargs["value"] = number_transform(property.get("default"))  # type: ignore
+                streamlit_kwargs["value"] = number_transform(property["default"])  # type: ignore
             else:
                 if "min_value" in streamlit_kwargs:
                     streamlit_kwargs["value"] = streamlit_kwargs["min_value"]
@@ -708,7 +708,7 @@ class InputUI:
                     )
         else:
             streamlit_kwargs["value"] = number_transform(
-                self._session_state.get(streamlit_kwargs["key"])
+                self._session_state[streamlit_kwargs["key"]]
             )
 
         if "min_value" in streamlit_kwargs and "max_value" in streamlit_kwargs:
@@ -731,9 +731,7 @@ class InputUI:
             full_key = key + "." + property_key
 
             if property.get("init_value"):
-                new_property["init_value"] = dict(property.get("init_value")).get(
-                    property_key
-                )
+                new_property["init_value"] = property["init_value"].get(property_key)
 
             new_property["readOnly"] = property.get("readOnly", False)
 
@@ -767,12 +765,12 @@ class InputUI:
 
     def _render_list_item(
         self,
-        streamlit_app,
+        streamlit_app: Any,
         parent_key: str,
-        value,
+        value: Any,
         index: int,
         property: Dict[str, Any],
-    ):
+    ) -> Any:
 
         label = "Item #" + str(index + 1)
         new_key = self._key + "-" + parent_key + "." + str(index)
@@ -808,12 +806,12 @@ class InputUI:
 
     def _render_dict_item(
         self,
-        streamlit_app,
+        streamlit_app: Any,
         parent_key: str,
         in_value: Tuple[str, Any],
         index: int,
         property: Dict[str, Any],
-    ):
+    ) -> Any:
 
         new_key = self._key + "-" + parent_key + "." + str(index)
         item_placeholder = streamlit_app.empty()
@@ -901,9 +899,9 @@ class InputUI:
     def _render_list_add_button(
         self,
         key: str,
-        streamlit_app,
-        data_list,
-    ):
+        streamlit_app: Any,
+        data_list: List[Any],
+    ) -> List[Any]:
         if streamlit_app.button(
             "Add Item",
             key=self._key + "-" + key + "list-add-item",
@@ -915,9 +913,9 @@ class InputUI:
     def _render_list_clear_button(
         self,
         key: str,
-        streamlit_app,
-        data_list,
-    ):
+        streamlit_app: Any,
+        data_list: List[Any],
+    ) -> List[Any]:
         if streamlit_app.button(
             "Clear All",
             key=self._key + "_" + key + "-list_clear-all",
@@ -926,7 +924,9 @@ class InputUI:
 
         return data_list
 
-    def _render_dict_add_button(self, key: str, streamlit_app, data_dict):
+    def _render_dict_add_button(
+        self, key: str, streamlit_app: Any, data_dict: Dict[str, Any]
+    ) -> Dict[str, Any]:
         if streamlit_app.button(
             "Add Item",
             key=self._key + "-" + key + "-add-item",
@@ -938,9 +938,9 @@ class InputUI:
     def _render_dict_clear_button(
         self,
         key: str,
-        streamlit_app,
-        data_dict,
-    ):
+        streamlit_app: Any,
+        data_dict: Dict[str, Any],
+    ) -> Dict[str, Any]:
         if streamlit_app.button(
             "Clear All",
             key=self._key + "-" + key + "-clear-all",
