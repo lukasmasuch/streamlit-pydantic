@@ -14,7 +14,7 @@ from pydantic.json import pydantic_encoder
 
 from streamlit_pydantic import schema_utils
 
-OVERWRITE_STREAMLIT_KWARGS_PREFIX = "st_kwargs_"
+_OVERWRITE_STREAMLIT_KWARGS_PREFIX = "st_kwargs_"
 
 
 def _name_to_title(name: str) -> str:
@@ -201,9 +201,9 @@ class InputUI:
         streamlit_kwargs: Dict = {}
 
         for kwarg in property:
-            if kwarg.startswith(OVERWRITE_STREAMLIT_KWARGS_PREFIX):
+            if kwarg.startswith(_OVERWRITE_STREAMLIT_KWARGS_PREFIX):
                 streamlit_kwargs[
-                    kwarg.replace(OVERWRITE_STREAMLIT_KWARGS_PREFIX, "")
+                    kwarg.replace(_OVERWRITE_STREAMLIT_KWARGS_PREFIX, "")
                 ] = property[kwarg]
         return streamlit_kwargs
 
