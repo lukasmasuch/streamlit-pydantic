@@ -4,7 +4,7 @@ import streamlit as st
 from pydantic import BaseSettings
 
 
-def streamlit_secrets_source(settings: BaseSettings) -> Dict[str, Any]:
+def _streamlit_secrets_source(settings: BaseSettings) -> Dict[str, Any]:
     """A settings source that loads settings from st.secrets."""
     return dict(st.secrets)
 
@@ -23,6 +23,6 @@ class StreamlitSettings(BaseSettings):
             return (
                 init_settings,
                 env_settings,
-                streamlit_secrets_source,
+                _streamlit_secrets_source,
                 file_secret_settings,
             )
