@@ -7,9 +7,6 @@
 
 
 
-**Global Variables**
----------------
-- **OVERWRITE_STREAMLIT_KWARGS_PREFIX**
 
 ---
 
