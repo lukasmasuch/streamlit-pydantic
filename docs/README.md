@@ -16,7 +16,6 @@
 
 ## Functions
 
-- [`settings.streamlit_secrets_source`](./streamlit_pydantic.settings.md#function-streamlit_secrets_source): A settings source that loads settings from st.secrets.
 - [`ui_renderer.pydantic_form`](./streamlit_pydantic.ui_renderer.md#function-pydantic_form): Auto-generates a Streamlit form based on the given (Pydantic-based) input class.
 - [`ui_renderer.pydantic_input`](./streamlit_pydantic.ui_renderer.md#function-pydantic_input): Auto-generates input UI elements for a selected Pydantic class.
 - [`ui_renderer.pydantic_output`](./streamlit_pydantic.ui_renderer.md#function-pydantic_output): Auto-generates output UI elements for all properties of a (Pydantic-based) model instance.
