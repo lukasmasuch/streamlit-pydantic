@@ -11,15 +11,12 @@ def _streamlit_secrets_source(settings: BaseSettings) -> Dict[str, Any]:
 
 class StreamlitSettings(BaseSettings):
     class Config:
+        """Default for streamlit settings class."""
+
         extra = "ignore"
 
         @classmethod
-        def customise_sources(
-            cls,
-            init_settings,
-            env_settings,
-            file_secret_settings,
-        ):
+        def customise_sources(cls, init_settings, env_settings, file_secret_settings) -> Any:  # type: ignore
             return (
                 init_settings,
                 env_settings,

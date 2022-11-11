@@ -1,3 +1,4 @@
+import contextlib
 import dataclasses
 import datetime
 import inspect
@@ -154,7 +155,7 @@ class InputUI:
             # if there are instance values, add them to the property dict
             if instance_dict is not None:
                 instance_value = instance_dict.get(property_key)
-                if instance_value in [None, ""]:
+                if instance_value in [None, ""] and instance_dict_by_alias:
                     instance_value = instance_dict_by_alias.get(property_key)
                 if instance_value not in [None, ""]:
                     property["init_value"] = instance_value
@@ -291,34 +292,28 @@ class InputUI:
             if property.get("init_value"):
                 streamlit_kwargs["value"] = property.get("init_value")
             elif property.get("default"):
-                try:
+                with contextlib.suppress(Exception):
                     streamlit_kwargs["value"] = datetime.time.fromisoformat(  # type: ignore
-                        property.get("default")
+                        property["default"]
                     )
-                except Exception:
-                    pass
             return streamlit_app.time_input(**{**streamlit_kwargs, **overwrite_kwargs})
         elif property.get("format") == "date":
             if property.get("init_value"):
                 streamlit_kwargs["value"] = property.get("init_value")
             elif property.get("default"):
-                try:
+                with contextlib.suppress(Exception):
                     streamlit_kwargs["value"] = datetime.date.fromisoformat(  # type: ignore
-                        property.get("default")
+                        property["default"]
                     )
-                except Exception:
-                    pass
             return streamlit_app.date_input(**{**streamlit_kwargs, **overwrite_kwargs})
         elif property.get("format") == "date-time":
             if property.get("init_value"):
                 streamlit_kwargs["value"] = property.get("init_value")
             elif property.get("default"):
-                try:
+                with contextlib.suppress(Exception):
                     streamlit_kwargs["value"] = datetime.datetime.fromisoformat(  # type: ignore
-                        property.get("default")
+                        property["default"]
                     )
-                except Exception:
-                    pass
             with self._streamlit_container.container():
                 if not property.get("is_item"):
                     self._streamlit_container.subheader(streamlit_kwargs.get("label"))
@@ -339,12 +334,10 @@ class InputUI:
                         "key": f"{streamlit_kwargs.get('key')}-date-input",
                     }
                     if streamlit_kwargs.get("value"):
-                        try:
+                        with contextlib.suppress(Exception):
                             date_kwargs["value"] = streamlit_kwargs.get(  # type: ignore
                                 "value"
                             ).date()
-                        except Exception:
-                            pass
                     selected_date = self._streamlit_container.date_input(**date_kwargs)
 
                 with time_col:
@@ -353,12 +346,10 @@ class InputUI:
                         "key": f"{streamlit_kwargs.get('key')}-time-input",
                     }
                     if streamlit_kwargs.get("value"):
-                        try:
+                        with contextlib.suppress(Exception):
                             time_kwargs["value"] = streamlit_kwargs.get(  # type: ignore
                                 "value"
                             ).time()
-                        except Exception:
-                            pass
                     selected_time = self._streamlit_container.time_input(**time_kwargs)
 
                 return datetime.datetime.combine(selected_date, selected_time)
@@ -1327,8 +1318,8 @@ def pydantic_form(
                 error_text = "**Whoops! There were some problems with your input:**"
                 for error in ex.errors():
                     if "loc" in error and "msg" in error:
-                        location = ".".join(error["loc"]).replace("__root__.", "")
-                        error_msg = "**" + location + ":** " + error["msg"]
+                        location = ".".join(error["loc"]).replace("__root__.", "")  # type: ignore
+                        error_msg = f"**{location}:** " + error["msg"]
                         error_text += "\n\n" + error_msg
                     else:
                         # Fallback
