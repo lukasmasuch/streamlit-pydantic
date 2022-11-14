@@ -47,6 +47,9 @@ class ExampleModel(BaseModel):
     multi_selection: Set[SelectionValue] = Field(
         ..., description="Allows multiple items from a set."
     )
+    disabled_selection: SelectionValue = Field(
+        ..., readOnly=True, description="A read only field that is shown as disabled"
+    )
     read_only_text: str = Field(
         "Lorem ipsum dolor sit amet",
         description="This is a ready only text.",
@@ -56,10 +59,29 @@ class ExampleModel(BaseModel):
         ...,
         description="Another object embedded into this model.",
     )
-    int_dict: Dict[str, int] = Field(..., description="Dict property with int values")
-    int_list: List[int] = Field(..., description="List of int values")
+    int_dict: Dict[str, int] = Field(
+        ...,
+        description="Dict property with int values",
+        gt=-4,
+    )
+    date_dict: Dict[str, datetime.datetime] = Field(
+        ...,
+        description="Dict property with date values",
+    )
+    bool_dict: Dict[str, bool] = Field(
+        ...,
+        description="Dict property with bool values",
+    )
+    int_list: List[int] = Field(
+        ...,
+        description="List of int values",
+        max_items=4,
+        min_items=2,
+        gt=2,
+    )
     object_list: List[OtherData] = Field(
         ...,
+        max_items=5,
         description="A list of objects embedded into this model.",
     )
 
@@ -77,10 +99,13 @@ instance = ExampleModel(
     long_text="This is some really long text from the INSTANCE",
     some_colour=Color("green"),
     single_selection=SelectionValue.FOO,
+    disabled_selection=SelectionValue.BAR,
     multi_selection=[SelectionValue.FOO, SelectionValue.BAR],
     read_only_text="INSTANCE read only text",
     nested_object=OtherData(text="nested data INSTANCE text", integer=66),
-    int_dict={"key 1": 3, "key 2": 33, "key 3": 333},
+    int_dict={"key 1": 33, "key 2": 33, "key 3": 333},
+    date_dict={"date_key 1": datetime.datetime(1999, 9, 9)},
+    bool_dict={"bool_key 1": True},
     int_list=[9, 99, 999],
     object_list=[
         OtherData(text="object list INSTANCE item 1", integer=6),
@@ -88,9 +113,7 @@ instance = ExampleModel(
     ],
 )
 
-# col1, col2 = st.columns(2)
 
-# with col1:
 st.header("Form inputs from model")
 data = sp.pydantic_input(key="my_input_model", model=ExampleModel)
 with st.expander("Current Input State", expanded=False):

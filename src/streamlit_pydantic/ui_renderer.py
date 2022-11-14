@@ -1,3 +1,4 @@
+import contextlib
 import dataclasses
 import datetime
 import inspect
@@ -14,7 +15,7 @@ from pydantic.json import pydantic_encoder
 
 from streamlit_pydantic import schema_utils
 
-OVERWRITE_STREAMLIT_KWARGS_PREFIX = "st_kwargs_"
+_OVERWRITE_STREAMLIT_KWARGS_PREFIX = "st_kwargs_"
 
 
 def _name_to_title(name: str) -> str:
@@ -154,7 +155,7 @@ class InputUI:
             # if there are instance values, add them to the property dict
             if instance_dict is not None:
                 instance_value = instance_dict.get(property_key)
-                if instance_value in [None, ""]:
+                if instance_value in [None, ""] and instance_dict_by_alias:
                     instance_value = instance_dict_by_alias.get(property_key)
                 if instance_value not in [None, ""]:
                     property["init_value"] = instance_value
@@ -168,7 +169,7 @@ class InputUI:
                 value = self._render_property(streamlit_app, property_key, property)
                 if not self._is_value_ignored(property_key, value):
                     self._store_value(property_key, value)
-            except Exception as e:
+            except Exception:
                 pass
 
         if properties_in_expander:
@@ -201,9 +202,9 @@ class InputUI:
         streamlit_kwargs: Dict = {}
 
         for kwarg in property:
-            if kwarg.startswith(OVERWRITE_STREAMLIT_KWARGS_PREFIX):
+            if kwarg.startswith(_OVERWRITE_STREAMLIT_KWARGS_PREFIX):
                 streamlit_kwargs[
-                    kwarg.replace(OVERWRITE_STREAMLIT_KWARGS_PREFIX, "")
+                    kwarg.replace(_OVERWRITE_STREAMLIT_KWARGS_PREFIX, "")
                 ] = property[kwarg]
         return streamlit_kwargs
 
@@ -212,9 +213,15 @@ class InputUI:
         if label and self._lowercase_labels:
             label = label.lower()
 
+        disabled = False
+        if property.get("readOnly"):
+            # Read only property -> only show value
+            disabled = True
+
         streamlit_kwargs = {
             "label": label,
             "key": str(self._session_state.run_id) + "-" + str(self._key) + "-" + key,
+            "disabled": disabled
             # "on_change": detect_change, -> not supported for inside forms
             # "args": (key,),
         }
@@ -285,68 +292,66 @@ class InputUI:
             if property.get("init_value"):
                 streamlit_kwargs["value"] = property.get("init_value")
             elif property.get("default"):
-                try:
+                with contextlib.suppress(Exception):
                     streamlit_kwargs["value"] = datetime.time.fromisoformat(  # type: ignore
-                        property.get("default")
+                        property["default"]
                     )
-                except Exception:
-                    pass
             return streamlit_app.time_input(**{**streamlit_kwargs, **overwrite_kwargs})
         elif property.get("format") == "date":
             if property.get("init_value"):
                 streamlit_kwargs["value"] = property.get("init_value")
             elif property.get("default"):
-                try:
+                with contextlib.suppress(Exception):
                     streamlit_kwargs["value"] = datetime.date.fromisoformat(  # type: ignore
-                        property.get("default")
+                        property["default"]
                     )
-                except Exception:
-                    pass
             return streamlit_app.date_input(**{**streamlit_kwargs, **overwrite_kwargs})
         elif property.get("format") == "date-time":
             if property.get("init_value"):
                 streamlit_kwargs["value"] = property.get("init_value")
             elif property.get("default"):
-                try:
+                with contextlib.suppress(Exception):
                     streamlit_kwargs["value"] = datetime.datetime.fromisoformat(  # type: ignore
-                        property.get("default")
+                        property["default"]
                     )
-                except Exception:
-                    pass
             with self._streamlit_container.container():
-                self._streamlit_container.subheader(streamlit_kwargs.get("label"))
+                if not property.get("is_item"):
+                    self._streamlit_container.subheader(streamlit_kwargs.get("label"))
                 if streamlit_kwargs.get("description"):
                     self._streamlit_container.text(streamlit_kwargs.get("description"))
                 selected_date = None
                 selected_time = None
-                date_col, time_col = self._streamlit_container.columns(2)
+
+                # columns can not be used within a collection
+                if property.get("is_item"):
+                    date_col = self._streamlit_container.container()
+                    time_col = self._streamlit_container.container()
+                else:
+                    date_col, time_col = self._streamlit_container.columns(2)
                 with date_col:
                     date_kwargs = {
                         "label": "Date",
-                        "key": streamlit_kwargs.get("key") + "-date-input",
+                        "key": f"{streamlit_kwargs.get('key')}-date-input",
                     }
                     if streamlit_kwargs.get("value"):
-                        try:
+                        with contextlib.suppress(Exception):
                             date_kwargs["value"] = streamlit_kwargs.get(  # type: ignore
                                 "value"
                             ).date()
-                        except Exception:
-                            pass
                     selected_date = self._streamlit_container.date_input(**date_kwargs)
 
                 with time_col:
                     time_kwargs = {
                         "label": "Time",
-                        "key": streamlit_kwargs.get("key") + "-time-input",
+                        "key": f"{streamlit_kwargs.get('key')}-time-input",
                     }
                     if streamlit_kwargs.get("value"):
-                        try:
+                        with contextlib.suppress(Exception):
                             time_kwargs["value"] = streamlit_kwargs.get(  # type: ignore
                                 "value"
                             ).time()
-                        except Exception:
-                            pass
                     selected_time = self._streamlit_container.time_input(**time_kwargs)
+
                 return datetime.datetime.combine(selected_date, selected_time)
         else:
             streamlit_app.warning(
@@ -406,8 +411,7 @@ class InputUI:
 
         if property.get("readOnly"):
             # Read only property -> only show value
-            streamlit_app.code(streamlit_kwargs["value"])
-            return streamlit_kwargs["value"]
+            streamlit_kwargs["disabled"] = property.get("readOnly", False)
 
         if property.get("format") == "multi-line" and not property.get("writeOnly"):
             # Use text area if format is multi-line (custom definition)
@@ -528,7 +532,17 @@ class InputUI:
         else:
             data_dict = {}
 
-        data_dict = self._render_dict_controls(streamlit_app, key, data_dict)
+        is_object = True if property["additionalProperties"].get("$ref") else False
+
+        add_col, clear_col, _ = streamlit_app.columns(3)
+
+        add_col = add_col.empty()
+
+        if self._clear_button_allowed(property):
+            data_dict = self._render_dict_add_button(key, add_col, data_dict)
+
+        if self._clear_button_allowed(property):
+            data_dict = self._render_dict_clear_button(key, clear_col, data_dict)
 
         new_dict = {}
 
@@ -537,15 +551,19 @@ class InputUI:
             updated_key, updated_value = self._render_dict_item(
                 streamlit_app,
                 key,
-                property["additionalProperties"].get("type"),
                 input_item,
                 index,
+                property,
             )
 
             if updated_key is not None and updated_value is not None:
                 new_dict[updated_key] = updated_value
 
-        streamlit_app.markdown("---")
+            if is_object:
+                streamlit_app.markdown("---")
+
+        if not is_object:
+            streamlit_app.markdown("---")
 
         return new_dict
 
@@ -649,6 +667,11 @@ class InputUI:
             streamlit_kwargs["value"] = property.get("init_value")
         elif property.get("default"):
             streamlit_kwargs["value"] = property.get("default")
+
+        # special formatting when rendering within a list/dict
+        if property.get("is_item"):
+            streamlit_app.markdown("##")
+
         return streamlit_app.checkbox(**{**streamlit_kwargs, **overwrite_kwargs})
 
     def _render_single_number_input(
@@ -689,9 +712,9 @@ class InputUI:
 
         if self._session_state.get(streamlit_kwargs["key"]) is None:
             if property.get("init_value") is not None:
-                streamlit_kwargs["value"] = number_transform(property.get("init_value"))
+                streamlit_kwargs["value"] = number_transform(property["init_value"])
             elif property.get("default") is not None:
-                streamlit_kwargs["value"] = number_transform(property.get("default"))  # type: ignore
+                streamlit_kwargs["value"] = number_transform(property["default"])  # type: ignore
             else:
                 if "min_value" in streamlit_kwargs:
                     streamlit_kwargs["value"] = streamlit_kwargs["min_value"]
@@ -704,7 +727,7 @@ class InputUI:
                     )
         else:
             streamlit_kwargs["value"] = number_transform(
-                self._session_state.get(streamlit_kwargs["key"])
+                self._session_state[streamlit_kwargs["key"]]
             )
 
         if "min_value" in streamlit_kwargs and "max_value" in streamlit_kwargs:
@@ -727,13 +750,14 @@ class InputUI:
             full_key = key + "." + property_key
 
             if property.get("init_value"):
-                new_property["init_value"] = dict(property.get("init_value")).get(
-                    property_key
-                )
+                new_property["init_value"] = property["init_value"].get(property_key)
+
+            new_property["readOnly"] = property.get("readOnly", False)
 
             value = self._render_property(streamlit_app, full_key, new_property)
             if not self._is_value_ignored(property_key, value):
                 object_inputs[property_key] = value
+
         return object_inputs
 
     def _render_single_object_input(
@@ -741,7 +765,10 @@ class InputUI:
     ) -> Any:
         # Add title and subheader
         title = property.get("title")
-        streamlit_app.subheader(title)
+        if property.get("is_item"):
+            streamlit_app.caption(title)
+        else:
+            streamlit_app.subheader(title)
         if property.get("description"):
             streamlit_app.markdown(property.get("description"))
 
@@ -749,24 +776,23 @@ class InputUI:
             property, self._schema_references
         )
 
-        if property.get("init_value"):
-            object_reference["init_value"] = property.get("init_value")
-        else:
-            object_reference["init_value"] = None
+        object_reference["init_value"] = property.get("init_value", None)
+
+        object_reference["readOnly"] = property.get("readOnly", None)
+
         return self._render_object_input(streamlit_app, key, object_reference)
 
     def _render_list_item(
         self,
-        streamlit_app,
+        streamlit_app: Any,
         parent_key: str,
-        of_type: str,
-        value,
+        value: Any,
         index: int,
-        object_reference=None,
-    ):
+        property: Dict[str, Any],
+    ) -> Any:
 
         label = "Item #" + str(index + 1)
-        new_key = self._key + "_" + parent_key + "." + str(index)
+        new_key = self._key + "-" + parent_key + "." + str(index)
         item_placeholder = streamlit_app.empty()
 
         with item_placeholder:
@@ -775,98 +801,38 @@ class InputUI:
 
             button_col.markdown("##")
 
-            remove_click = button_col.button("Remove", key=new_key + "-remove")
-
-            value_kwargs = {}
+            if self._remove_button_allowed(index, property):
+                remove = False
+            else:
+                remove = button_col.button("Remove", key=new_key + "-remove")
 
             #  insert an input field when the remove button has not been clicked
-            if not remove_click:
+            if not remove:
                 with input_col:
-                    if of_type == "object":
+                    new_property = {
+                        "title": label,
+                        "init_value": value if value else None,
+                        "is_item": True,
+                        "readOnly": property.get("readOnly"),
+                        **property["items"],
+                    }
+                    return self._render_property(streamlit_app, new_key, new_property)
 
-                        new_object_reference = object_reference
-                        new_object_reference["init_value"] = value if value else None
-                        new_object_reference["title"] = label
-
-                        return self._render_object_input(
-                            streamlit_app, new_key, new_object_reference
-                        )
-
-                    elif of_type == "integer":
-                        value_kwargs["label"] = label
-                        if self._session_state.get(new_key) is None:
-                            value_kwargs["value"] = value if value else 0  # type: ignore
-                        else:
-                            value_kwargs["value"] = int(
-                                self._session_state.get(new_key)
-                            )
-                        value_kwargs["key"] = new_key
-                        value_kwargs["format"] = "%i"
-                        return input_col.number_input(**value_kwargs)
-                    elif of_type == "number":
-                        value_kwargs["label"] = label
-                        if self._session_state.get(new_key) is None:
-                            value_kwargs["value"] = value if value else 0.0  # type: ignore
-                        else:
-                            value_kwargs["value"] = float(
-                                self._session_state.get(new_key)
-                            )
-                        value_kwargs["format"] = "%f"
-                        value_kwargs["key"] = new_key
-                        return input_col.number_input(**value_kwargs)
-                    else:
-                        value_kwargs["label"] = label
-                        if self._session_state.get(new_key) is None:
-                            value_kwargs["value"] = value if value else ""
-                        else:
-                            value_kwargs["value"] = self._session_state.get(new_key)
-                        value_kwargs["key"] = new_key
-                        return input_col.text_input(**value_kwargs)
             else:
                 # when the remove button is clicked clear the placeholder and return None
                 item_placeholder.empty()
                 return None
 
-    def _render_list_controls(
-        self,
-        streamlit_app,
-        key: str,
-        data_list: List[Any],
-    ):
-
-        add_col, clear_col, _ = streamlit_app.columns(3)
-
-        with clear_col:
-            if streamlit_app.button(
-                "Clear All", key=self._key + "_" + key + "-clear-all"
-            ):
-                data_list = []
-
-        with add_col:
-            if streamlit_app.button(
-                "Add Item", key=self._key + "_" + key + "-add-item"
-            ):
-
-                if len(data_list) > 0:
-                    # if the list has items, make a copy of the last item
-                    data_list.append(data_list[-1])
-                else:
-                    # If the list is empty, add a None to trigger a new empty item
-                    data_list.append(None)
-
-        return data_list
-
     def _render_dict_item(
         self,
-        streamlit_app,
+        streamlit_app: Any,
         parent_key: str,
-        of_type: str,
         in_value: Tuple[str, Any],
         index: int,
-    ):
+        property: Dict[str, Any],
+    ) -> Any:
 
-        label = "Item #" + str(index + 1)
-        new_key = self._key + "_" + parent_key + "." + str(index)
+        new_key = self._key + "-" + parent_key + "." + str(index)
         item_placeholder = streamlit_app.empty()
 
         with item_placeholder.container():
@@ -880,47 +846,33 @@ class InputUI:
             dict_value_key = new_key + "-value"
 
             button_col.markdown("##")
-            remove_click = button_col.button("Remove", key=new_key + "-remove")
-            if not remove_click:
+
+            if self._remove_button_allowed(index, property):
+                remove = False
+            else:
+                remove = button_col.button("Remove", key=new_key + "-remove")
+
+            if not remove:
                 with key_col:
                     updated_key = streamlit_app.text_input(
                         "Key",
                         value=dict_key,
                         key=dict_key_key,
+                        disabled=property.get("readOnly", False),
                     )
 
                 with value_col:
-                    # TODO: also add boolean?
-                    value_kwargs = {
-                        "label": "Value",
-                        "key": dict_value_key,
+                    new_property = {
+                        "title": "Value",
+                        "init_value": dict_value,
+                        "is_item": True,
+                        "readOnly": property.get("readOnly"),
+                        **property["additionalProperties"],
                     }
-                    if of_type == "integer":
-                        if self._session_state.get(dict_value_key) is None:
-                            value_kwargs["value"] = dict_value if dict_value else 0  # type: ignore
-                        else:
-                            value_kwargs["value"] = int(
-                                self._session_state.get(dict_value_key)
-                            )
-                        value_kwargs["format"] = "%i"
-                        updated_value = streamlit_app.number_input(**value_kwargs)
-                    elif of_type == "number":
-                        if self._session_state.get(dict_value_key) is None:
-                            value_kwargs["value"] = dict_value if dict_value else 0.0  # type: ignore
-                        else:
-                            value_kwargs["value"] = float(
-                                self._session_state.get(dict_value_key)
-                            )
-                        value_kwargs["format"] = "%f"
-                        updated_value = streamlit_app.number_input(**value_kwargs)
-                    else:
-                        if self._session_state.get(dict_value_key) is None:
-                            value_kwargs["value"] = dict_value
-                        else:
-                            value_kwargs["value"] = self._session_state.get(
-                                dict_value_key
-                            )
-                        updated_value = streamlit_app.text_input(**value_kwargs)
+                    with value_col:
+                        updated_value = self._render_property(
+                            streamlit_app, dict_value_key, new_property
+                        )
 
                     return updated_key, updated_value
 
@@ -929,75 +881,101 @@ class InputUI:
                 item_placeholder.empty()
                 return None, None
 
-    def _render_dict_controls(
+    def _add_button_allowed(
         self,
-        streamlit_app,
+        index: int,
+        property: Dict[str, Any],
+    ) -> bool:
+        add_allowed = not (
+            (property.get("readOnly", False) is True)
+            or ((index) >= property.get("maxItems", 1000))
+        )
+
+        return add_allowed
+
+    def _remove_button_allowed(
+        self,
+        index: int,
+        property: Dict[str, Any],
+    ) -> bool:
+        remove_allowed = (property.get("readOnly") is True) or (
+            (index + 1) <= property.get("minItems", 0)
+        )
+
+        return remove_allowed
+
+    def _clear_button_allowed(
+        self,
+        property: Dict[str, Any],
+    ) -> bool:
+        clear_allowed = not (
+            (property.get("readOnly", False) is True)
+            or (property.get("minItems", 0) > 0)
+        )
+
+        return clear_allowed
+
+    def _render_list_add_button(
+        self,
         key: str,
-        data_dict: Dict[str, Any],
-    ):
+        streamlit_app: Any,
+        data_list: List[Any],
+    ) -> List[Any]:
+        if streamlit_app.button(
+            "Add Item",
+            key=self._key + "-" + key + "list-add-item",
+        ):
+            data_list.append(None)
 
-        add_col, clear_col, _ = streamlit_app.columns(3)
+        return data_list
 
-        with clear_col:
-            if streamlit_app.button(
-                "Clear All", key=self._key + "_" + key + "-clear-all"
-            ):
-                data_dict = {}
+    def _render_list_clear_button(
+        self,
+        key: str,
+        streamlit_app: Any,
+        data_list: List[Any],
+    ) -> List[Any]:
+        if streamlit_app.button(
+            "Clear All",
+            key=self._key + "_" + key + "-list_clear-all",
+        ):
+            data_list = []
 
-        with add_col:
-            if streamlit_app.button(
-                "Add Item", key=self._key + "_" + key + "-add-item"
-            ):
-                data_dict[""] = ""
+        return data_list
+
+    def _render_dict_add_button(
+        self, key: str, streamlit_app: Any, data_dict: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        if streamlit_app.button(
+            "Add Item",
+            key=self._key + "-" + key + "-add-item",
+        ):
+            data_dict[str(len(data_dict) + 1)] = None
 
         return data_dict
 
-    def _render_property_list_input(
-        self, streamlit_app: Any, key: str, property: Dict
-    ) -> Any:
+    def _render_dict_clear_button(
+        self,
+        key: str,
+        streamlit_app: Any,
+        data_dict: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        if streamlit_app.button(
+            "Clear All",
+            key=self._key + "-" + key + "-clear-all",
+        ):
+            data_dict = {}
+
+        return data_dict
+
+    def _render_list_input(self, streamlit_app: Any, key: str, property: Dict) -> Any:
 
         # Add title and subheader
         streamlit_app.subheader(property.get("title"))
         if property.get("description"):
             streamlit_app.markdown(property.get("description"))
 
-        object_list = []
-
-        if self._get_value(key) is not None or self._get_value(key) == []:
-            data_list = self._get_value(key)
-        elif property.get("init_value"):
-            data_list = property.get("init_value")
-        else:
-            data_list = []
-
-        data_list = self._render_list_controls(streamlit_app, key, data_list)
-
-        if len(data_list) > 0:
-            for index, item in enumerate(data_list):
-                output = self._render_list_item(
-                    streamlit_app, key, property["items"]["type"], item, index
-                )
-                if output is not None:
-                    object_list.append(output)
-
-        streamlit_app.markdown("---")
-
-        return object_list
-
-    def _render_object_list_input(
-        self, streamlit_app: Any, key: str, property: Dict
-    ) -> Any:
-
-        # TODO: support max_items, and min_items properties
-
-        # Add title and subheader
-        streamlit_app.subheader(property.get("title"))
-        if property.get("description"):
-            streamlit_app.markdown(property.get("description"))
-
-        object_reference = schema_utils.resolve_reference(
-            property["items"]["$ref"], self._schema_references
-        )
+        is_object = True if property["items"].get("$ref") else False
 
         object_list = []
 
@@ -1009,21 +987,34 @@ class InputUI:
         else:
             data_list = []
 
-        data_list = self._render_list_controls(streamlit_app, key, data_list)
+        add_col, clear_col, _ = streamlit_app.columns(3)
+
+        add_col = add_col.empty()
+
+        self._render_list_add_button(key, add_col, data_list)
+
+        if self._clear_button_allowed(property):
+            data_list = self._render_list_clear_button(key, clear_col, data_list)
 
         if len(data_list) > 0:
             for index, item in enumerate(data_list):
                 output = self._render_list_item(
                     streamlit_app,
                     key,
-                    object_reference["type"],
                     item,
                     index,
-                    object_reference=object_reference,
+                    property,
                 )
                 if output is not None:
                     object_list.append(output)
 
+                if is_object:
+                    streamlit_app.markdown("---")
+
+            if not self._add_button_allowed(len(object_list), property):
+                add_col = add_col.empty()
+
+            if not is_object:
                 streamlit_app.markdown("---")
 
         return object_list
@@ -1063,10 +1054,10 @@ class InputUI:
             return self._render_single_object_input(streamlit_app, key, property)
 
         if schema_utils.is_object_list_property(property, self._schema_references):
-            return self._render_object_list_input(streamlit_app, key, property)
+            return self._render_list_input(streamlit_app, key, property)
 
         if schema_utils.is_property_list(property):
-            return self._render_property_list_input(streamlit_app, key, property)
+            return self._render_list_input(streamlit_app, key, property)
 
         if schema_utils.is_single_reference(property):
             return self._render_single_reference(streamlit_app, key, property)
@@ -1358,8 +1349,8 @@ def pydantic_form(
                 error_text = "**Whoops! There were some problems with your input:**"
                 for error in ex.errors():
                     if "loc" in error and "msg" in error:
-                        location = ".".join(error["loc"]).replace("__root__.", "")
-                        error_msg = "**" + location + ":** " + error["msg"]
+                        location = ".".join(error["loc"]).replace("__root__.", "")  # type: ignore
+                        error_msg = f"**{location}:** " + error["msg"]
                         error_text += "\n\n" + error_msg
                     else:
                         # Fallback
