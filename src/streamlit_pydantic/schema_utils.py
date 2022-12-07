@@ -20,7 +20,8 @@ def get_single_reference_item(property: Dict, references: Dict) -> Dict:
 
 def get_union_references(property: Dict, references: Dict) -> List[Dict]:
     # Ref can either be directly in the properties or the first element of allOf
-    union_references = property.get("anyOf")
+    # anyOf is used for union property prior to pydantic < 1.10
+    union_references = property.get("oneOf", property.get("anyOf"))
     resolved_references: List[Dict] = []
     for reference in union_references:  # type: ignore
         resolved_references.append(resolve_reference(reference["$ref"], references))
@@ -124,13 +125,16 @@ def is_single_object(property: Dict, references: Dict) -> bool:
 
 
 def is_union_property(property: Dict) -> bool:
-    if property.get("anyOf") is None:
+    # anyOf is used for union property prior to pydantic < 1.10
+    union_prop = property.get("oneOf", property.get("anyOf"))
+
+    if union_prop is None:
         return False
 
-    if len(property.get("anyOf")) == 0:  # type: ignore
+    if len(union_prop) == 0:  # type: ignore
         return False
 
-    for reference in property.get("anyOf"):  # type: ignore
+    for reference in union_prop:  # type: ignore
         if not is_single_reference(reference):
             return False
 
