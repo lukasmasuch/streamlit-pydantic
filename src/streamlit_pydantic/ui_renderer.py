@@ -427,19 +427,12 @@ class InputUI:
     ) -> Any:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
         overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
-        if property.get("init_value"):
-            streamlit_kwargs["value"] = property.get("init_value").as_hex()
-        elif property.get("default"):
-            streamlit_kwargs["value"] = property.get("default").as_hex()
-        elif property.get("example"):
-            # TODO: also use example for other property types
-            # Use example as value if it is provided
-            streamlit_kwargs["value"] = property.get("example").as_hex()
-
-        if property.get("readOnly"):
-            # Read only property -> only show value
-            streamlit_app.code(streamlit_kwargs["value"])
-            return streamlit_kwargs["value"]
+        if property.get("init_value") is not None:
+            streamlit_kwargs["value"] = property["init_value"]
+        elif property.get("default") is not None:
+            streamlit_kwargs["value"] = property["default"]
+        elif property.get("example") is not None:
+            streamlit_kwargs["value"] = property["example"]
 
         if property.get("format") == "text":
             # Use text input if specified format is text
