@@ -4,6 +4,7 @@ from typing import Dict, List, Literal, Optional, Set
 
 import streamlit as st
 from pydantic import BaseModel, Field, SecretStr
+from pydantic.color import Color
 
 import streamlit_pydantic as sp
 from streamlit_pydantic.types import FileContent
@@ -55,10 +56,20 @@ class DisabledModel(BaseModel):
         readOnly=True,
         description="Time property. Optional because of default value.",
     )
+    dt: Optional[datetime.datetime] = Field(
+        datetime.datetime.now(),
+        readOnly=True,
+        description="Datetime property. Optional because of default value.",
+    )
     boolean: bool = Field(
         False,
         readOnly=True,
         description="Boolean property. Optional because of default value.",
+    )
+    colour: Color = Field(
+        Color("Blue"),
+        readOnly=True,
+        description="Color property. Optional because of default value.",
     )
     read_only_text: str = Field(
         "Lorem ipsum dolor sit amet",
@@ -113,21 +124,24 @@ instance = DisabledModel(
     short_text="Some INSTANCE text",
     password="$uper_$ecret!",
     long_text="This is some really long text from the INSTANCE",
-    positive_integer=20,
     integer_in_range=28,
-    some_date=datetime.date(1999, 9, 9),
-    some_time=datetime.time(9, 9, 16),
-    some_datetime=datetime.datetime(1999, 9, 9),
-    some_boolean=True,
-    single_selection=SelectionValue.FOO,
-    disabled_selection=SelectionValue.BAR,
-    multi_selection=[SelectionValue.FOO, SelectionValue.BAR],
+    positive_integer=20,
+    float_number=0.00444,
+    date=datetime.date(1999, 9, 9),
+    time=datetime.time(9, 9, 16),
+    dt=datetime.datetime(1999, 9, 9),
+    boolean=True,
+    colour=Color("Yellow"),
     read_only_text="INSTANCE read only text",
+    single_selection=SelectionValue.FOO,
+    single_selection_with_literal="bar",
+    multi_selection=[SelectionValue.FOO, SelectionValue.BAR],
+    multi_selection_with_literal=["foo", "bar"],
     single_object=OtherData(text="nested data INSTANCE text", integer=66),
+    string_list=["a", "ab", "abc"],
+    int_list=[9, 99, 999],
     string_dict={"key 1": "A", "key 2": "B", "key 3": "C"},
     float_dict={"key A": 9.99, "key B": 66.0, "key C": -55.8},
-    int_list=[9, 99, 999],
-    string_list=["a", "ab", "abc"],
     object_list=[
         OtherData(text="object list INSTANCE item 1", integer=6),
         OtherData(text="object list INSTANCE item 2", integer=99),
