@@ -1,7 +1,7 @@
 from typing import Union
 
 import streamlit as st
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 import streamlit_pydantic as sp
 
@@ -17,10 +17,21 @@ class EmailAddress(BaseModel):
     send_news: bool
 
 
+class ContactMethodRadio(BaseModel):
+    contact: Union[PostalAddress, EmailAddress] = Field(
+        description="Use radio type for single_selection.",
+        st_kwargs_ui_type="radio",
+    )
+    text: str
+
+st.header("Form radio inputs from model")
+input_data = sp.pydantic_input(key="union_radio_input", model=ContactMethodRadio)
+if input_data:
+    st.json(input_data)
+
 class ContactMethod(BaseModel):
     contact: Union[PostalAddress, EmailAddress]
     text: str
-
 
 st.header("Form inputs from model")
 input_data = sp.pydantic_input(key="union_input", model=ContactMethod)

@@ -67,6 +67,10 @@ class ShowcaseModel(BaseModel):
     single_selection_with_literal: Literal["foo", "bar"] = Field(
         "foo", description="Only select a single item from a set."
     )
+    single_selection_with_radio: SelectionValue = Field(
+        description="Use radio type for single_selection.",
+        st_kwargs_ui_type="radio",
+    )
     multi_selection: Set[SelectionValue] = Field(
         ..., description="Allows multiple items from a set."
     )
