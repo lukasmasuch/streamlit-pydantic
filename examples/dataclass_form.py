@@ -31,5 +31,5 @@ with from_instance_tab:
     # FIXME: this should be a pydantic_form to match the "from model.." above
     # but initialising a pydantic_form with an instance is not yet supported
     instance_input_data = sp.pydantic_input(key="my_form_instance", model=instance)
-    if instance:
+    if instance_input_data:
         st.json(json.dumps(instance_input_data, default=pydantic_encoder))
