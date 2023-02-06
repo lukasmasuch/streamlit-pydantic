@@ -1313,7 +1313,11 @@ def pydantic_form(
 
         if submit_button:
             try:
-                return parse_obj_as(model, input_state)
+                # check if the model is an instance before parsing
+                if isinstance(model, BaseModel):
+                    return parse_obj_as(model.__class__, input_state)
+                else:
+                    return parse_obj_as(model, input_state)
             except ValidationError as ex:
                 error_text = "**Whoops! There were some problems with your input:**"
                 for error in ex.errors():
