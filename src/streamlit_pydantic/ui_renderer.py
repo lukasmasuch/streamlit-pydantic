@@ -57,6 +57,16 @@ def _is_compatible_image(mime_type: str) -> bool:
 def _is_compatible_video(mime_type: str) -> bool:
     return mime_type in ["video/mp4"]
 
+def _get_current_ui_component(overwrite_kwargs, streamlit_app):
+    current_ui_attr_name = ""
+    if "ui_type" in overwrite_kwargs:
+        if type(overwrite_kwargs["ui_type"]) == str:
+            current_ui_attr_name = overwrite_kwargs["ui_type"]
+        del overwrite_kwargs["ui_type"]
+    if hasattr(streamlit_app, current_ui_attr_name) is not None:
+        return getattr(streamlit_app, current_ui_attr_name)
+    st.error(f'no such ui type {current_ui_attr_name}')
+    return None
 
 class GroupOptionalFieldsStrategy(str, Enum):
     NO = "no"
@@ -484,9 +494,18 @@ class InputUI:
         if len(select_options) == 1:
             return select_options[0]
         else:
+            try:
+                current_component = _get_current_ui_component(overwrite_kwargs, streamlit_app)
+                return current_component(
+                    **{**streamlit_kwargs, "options": select_options, **overwrite_kwargs}
+                )
+            except Exception:
+                pass
+
             return streamlit_app.selectbox(
                 **{**streamlit_kwargs, "options": select_options, **overwrite_kwargs}
             )
+
 
     def _render_single_dict_input(
         self, streamlit_app: Any, key: str, property: Dict
@@ -590,13 +609,25 @@ class InputUI:
         if "help" in streamlit_kwargs:
             streamlit_app.markdown(streamlit_kwargs["help"])
 
-        selected_reference = streamlit_app.selectbox(
-            **{
-                **streamlit_kwargs,
-                "label": streamlit_kwargs["label"] + " - Options",
-                "options": name_reference_mapping.keys(),
-            }
-        )
+        overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
+        selected_reference = None
+        try:
+            current_component = _get_current_ui_component(overwrite_kwargs, streamlit_app)
+            selected_reference = current_component(
+                **{
+                    **streamlit_kwargs,
+                    "label": streamlit_kwargs["label"] + " - Options",
+                    "options": name_reference_mapping.keys(),
+                }
+            )
+        except Exception:
+            selected_reference = streamlit_app.selectbox(
+                **{
+                    **streamlit_kwargs,
+                    "label": streamlit_kwargs["label"] + " - Options",
+                    "options": name_reference_mapping.keys(),
+                }
+            )
 
         input_data = self._render_object_input(
             streamlit_app, key, name_reference_mapping[selected_reference]
