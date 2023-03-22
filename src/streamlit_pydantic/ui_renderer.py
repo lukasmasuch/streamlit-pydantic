@@ -422,6 +422,27 @@ class InputUI:
                 streamlit_kwargs["type"] = "password"
             return streamlit_app.text_input(**{**streamlit_kwargs, **overwrite_kwargs})
 
+    def _render_single_color_input(
+        self, streamlit_app: Any, key: str, property: Dict
+    ) -> Any:
+        streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
+        overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
+        if property.get("init_value") is not None:
+            streamlit_kwargs["value"] = property["init_value"]
+        elif property.get("default") is not None:
+            streamlit_kwargs["value"] = property["default"]
+        elif property.get("example") is not None:
+            streamlit_kwargs["value"] = property["example"]
+
+        if property.get("format") == "text":
+            # Use text input if specified format is text
+            return streamlit_app.text_input(**{**streamlit_kwargs, **overwrite_kwargs})
+        else:
+            # Use color picker input for most situations
+            return streamlit_app.color_picker(
+                **{**streamlit_kwargs, **overwrite_kwargs}
+            )
+
     def _render_multi_enum_input(
         self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
@@ -1006,6 +1027,9 @@ class InputUI:
 
         if schema_utils.is_single_datetime_property(property):
             return self._render_single_datetime_input(streamlit_app, key, property)
+
+        if schema_utils.is_single_color_property(property):
+            return self._render_single_color_input(streamlit_app, key, property)
 
         if schema_utils.is_single_boolean_property(property):
             return self._render_single_boolean_input(streamlit_app, key, property)

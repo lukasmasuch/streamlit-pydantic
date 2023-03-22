@@ -4,6 +4,7 @@ from typing import Dict, List, Literal, Optional, Set
 
 import streamlit as st
 from pydantic import BaseModel, Field
+from pydantic.color import Color
 
 import streamlit_pydantic as sp
 
@@ -39,6 +40,7 @@ class ExampleModel(BaseModel):
         multiple_of=2,
         description="Number property with a limited range.",
     )
+    some_colour: Color
     single_selection: SelectionValue = Field(
         ..., description="Only select a single item from a set."
     )
@@ -70,6 +72,10 @@ class ExampleModel(BaseModel):
         ...,
         description="Dict property with bool values",
     )
+    color_dict: Dict[str, Color] = Field(
+        ...,
+        description="A dict of colors embedded into this model.",
+    )
     int_list: List[int] = Field(
         ...,
         description="List of int values",
@@ -77,10 +83,19 @@ class ExampleModel(BaseModel):
         min_items=2,
         gt=2,
     )
+    color_list: List[Color] = Field(
+        ...,
+        description="List of color values",
+        min_items=2,
+    )
     object_list: List[OtherData] = Field(
         ...,
         max_items=5,
         description="A list of objects embedded into this model.",
+    )
+    object_dict: Dict[str, OtherData] = Field(
+        ...,
+        description="Dict property with complex values",
     )
 
 
@@ -95,6 +110,7 @@ instance = ExampleModel(
     integer_in_range=28,
     some_boolean=True,
     long_text="This is some really long text from the INSTANCE",
+    some_colour=Color("green"),
     single_selection=SelectionValue.FOO,
     disabled_selection=SelectionValue.BAR,
     multi_selection=[SelectionValue.FOO, SelectionValue.BAR],
@@ -103,26 +119,35 @@ instance = ExampleModel(
     int_dict={"key 1": 33, "key 2": 33, "key 3": 333},
     date_dict={"date_key 1": datetime.datetime(1999, 9, 9)},
     bool_dict={"bool_key 1": True},
+    color_dict={"Colour A": Color("#F3F3F3"), "Colour B": Color("#4E4E4E")},
     int_list=[9, 99, 999],
+    color_list=[Color("#F300F3"), Color("#00F3F3")],
     object_list=[
         OtherData(text="object list INSTANCE item 1", integer=6),
         OtherData(text="object list INSTANCE item 2", integer=99),
     ],
+    object_dict={
+        "obj 1": OtherData(text="object list dict item 1", integer=6),
+    },
 )
 
 
-st.header("Form inputs from model")
-data = sp.pydantic_input(key="my_input_model", model=ExampleModel)
-with st.expander("Current Input State", expanded=False):
-    st.json(data)
+from_model_tab, from_instance_tab = st.tabs(
+    ["Form inputs from model", "Form inputs from instance"]
+)
+
+with from_model_tab:
+    data = sp.pydantic_input(key="my_input_model", model=ExampleModel)
+    with st.expander("Current Input State", expanded=False):
+        st.json(data)
 
 
-# # with col2:
-st.header("Form inputs from instance")
-data = sp.pydantic_input(key="my_input_instance", model=instance)
-with st.expander("Current Input State", expanded=False):
-    st.json(data)
+with from_instance_tab:
+    data = sp.pydantic_input(key="my_input_instance", model=instance)
+    with st.expander("Current Input State", expanded=False):
+        st.json(data)
 
+st.markdown("---")
 
 with st.expander("Session State", expanded=False):
     st.write(st.session_state)
