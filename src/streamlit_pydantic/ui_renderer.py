@@ -100,7 +100,14 @@ class InputUI:
             # Convert dataclasses
             import pydantic
 
-            self._input_class = pydantic.dataclasses.dataclass(model).__pydantic_model__  # type: ignore
+            if isinstance(model, type):
+                self._input_class = pydantic.dataclasses.dataclass(model).__pydantic_model__  # type: ignore
+            else:
+                # When model is a dataclass instance, do a full conversion to a BaseModel instance
+                self._input_class = pydantic.dataclasses.dataclass(
+                    model.__class__  # type: ignore
+                ).__pydantic_model__(**model.__dict__)
+
         else:
             self._input_class = model
 
