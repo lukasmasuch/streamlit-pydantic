@@ -26,21 +26,30 @@ class ContactMethod(BaseModel):
     text: str
 
 
-st.header("Form inputs from model")
-input_data = sp.pydantic_input(key="union_input", model=ContactMethod)
-if input_data:
-    st.json(input_data)
-
-
-st.header("Form inputs from instance")
-instance = ContactMethod(
-    contact=EmailAddress(
-        contact_type="email", email="instance@example.com", send_news=True
-    ),
-    text="instance text",
+from_model_tab, from_instance_tab = st.tabs(
+    ["Form inputs from model", "Form inputs from instance"]
 )
 
-instance_input_data = sp.pydantic_input(key="union_input_instance", model=instance)
+with from_model_tab:
+    input_data = sp.pydantic_input(key="union_input", model=ContactMethod)
+    if input_data:
+        st.json(input_data)
 
-if instance_input_data:
-    st.json(instance_input_data)
+
+with from_instance_tab:
+    instance = ContactMethod(
+        contact=EmailAddress(
+            contact_type="email", email="instance@example.com", send_news=True
+        ),
+        text="instance text",
+    )
+
+    instance_input_data = sp.pydantic_input(key="union_input_instance", model=instance)
+
+    if instance_input_data:
+        st.json(instance_input_data)
+
+st.markdown("---")
+
+with st.expander("Session State", expanded=False):
+    st.write(st.session_state)
