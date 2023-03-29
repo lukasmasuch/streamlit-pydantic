@@ -42,7 +42,7 @@ test:
 	pipenv run pytest -m "not slow"
 
 release: build
-	twine upload dist/*
+	twine upload -u "__token__" dist/*
 
 help:
 	@echo '----'
