@@ -1,12 +1,23 @@
-.PHONY: all install check test docs build format release
 
-all: help
+.PHONY: help
+help:
+	@# Magic line used to create self-documenting makefiles.
+	@# See https://stackoverflow.com/a/35730928
+	@awk '/^#/{c=substr($$0,3);next}c&&/^[[:alpha:]][[:alnum:]_-]+:/{print substr($$1,1,index($$1,":")),c}1{c=0}' Makefile | column -s: -t
 
+.PHONY: all
+# Install everything needed for development and run all checks.
+all: install check
+
+.PHONY: install
+# Install everything needed for development.
 install:
 	python -m pip install pipenv
 	pipenv --rm || true
 	pipenv install --dev --skip-lock
 
+.PHONY: check
+# Run all formatting and linting checks.
 check:
 	# Run all formatting and linting checks:
 	pipenv run black --check src
@@ -20,6 +31,8 @@ check:
 	# Checking package safety
 	pipenv check
 
+.PHONY: format
+# Run code formatters.
 format:
 	# Format code via black and imports via isort:
 	pipenv run black src
@@ -27,30 +40,26 @@ format:
 	pipenv run isort --profile black src
 	pipenv run isort --profile black tests
 
+.PHONY: docs
+# Build the API documentation.
 docs:
 	pipenv run lazydocs --overview-file=README.md --src-base-url=https://github.com/lukasmasuch/streamlit-pydantic/blob/main streamlit_pydantic
 
+.PHONY: build
+# Build everything for release.
 build: docs
-	# Build distribution
 	rm -rf ./dist
 	rm -rf ./build
 	pipenv run python -m build
 	pipenv run twine check dist/*
 
+.PHONY: test
+# Run unit tests.
 test:
 	pipenv run coverage erase
 	pipenv run pytest -m "not slow"
 
+.PHONY: release
+# Build everything and upload distribution to PyPi.
 release: build
 	twine upload -u "__token__" dist/*
-
-help:
-	@echo '----'
-	@echo 'install             - install everything needed for development'
-	@echo 'format              - run code formatters'
-	@echo 'check               - run all formatting and linting checks'
-	@echo 'test                - run unit tests'
-	@echo 'docs                - build the documentation'
-	@echo 'build               - build everything for release'
-	@echo 'release             - upload the distribution to PyPI'
-
