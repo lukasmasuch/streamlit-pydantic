@@ -10,7 +10,7 @@
 
 ---
 
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L1244"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L1258"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>function</kbd> `pydantic_input`
 
@@ -45,7 +45,7 @@ Auto-generates input UI elements for a selected Pydantic class.
 
 ---
 
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L1273"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L1287"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>function</kbd> `pydantic_output`
 
@@ -64,7 +64,7 @@ Auto-generates output UI elements for all properties of a (Pydantic-based) model
 
 ---
 
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L1287"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L1301"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>function</kbd> `pydantic_form`
 
@@ -103,7 +103,7 @@ Auto-generates a Streamlit form based on the given (Pydantic-based) input class.
 
 ---
 
-<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L60"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/src/streamlit_pydantic/ui_renderer.py#L61"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `GroupOptionalFieldsStrategy`
 An enumeration. 
