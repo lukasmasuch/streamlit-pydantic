@@ -205,7 +205,6 @@ class InputUI:
         return self._session_state[self._session_input_key]
 
     def _get_overwrite_streamlit_kwargs(self, key: str, property: Dict) -> Dict:
-
         streamlit_kwargs: Dict = {}
 
         for kwarg in property:
@@ -519,7 +518,6 @@ class InputUI:
     def _render_single_dict_input(
         self, streamlit_app: Any, key: str, property: Dict
     ) -> Any:
-
         # Add title and subheader
         streamlit_app.subheader(property.get("title"))
         if property.get("description"):
@@ -547,7 +545,6 @@ class InputUI:
         new_dict = {}
 
         for index, input_item in enumerate(data_dict.items()):
-
             updated_key, updated_value = self._render_dict_item(
                 streamlit_app,
                 key,
@@ -790,13 +787,11 @@ class InputUI:
         index: int,
         property: Dict[str, Any],
     ) -> Any:
-
         label = "Item #" + str(index + 1)
         new_key = self._key + "-" + parent_key + "." + str(index)
         item_placeholder = streamlit_app.empty()
 
         with item_placeholder:
-
             input_col, button_col = streamlit_app.columns([8, 3])
 
             button_col.markdown("##")
@@ -831,12 +826,10 @@ class InputUI:
         index: int,
         property: Dict[str, Any],
     ) -> Any:
-
         new_key = self._key + "-" + parent_key + "." + str(index)
         item_placeholder = streamlit_app.empty()
 
         with item_placeholder.container():
-
             key_col, value_col, button_col = streamlit_app.columns([4, 4, 3])
 
             dict_key = in_value[0]
@@ -969,7 +962,6 @@ class InputUI:
         return data_dict
 
     def _render_list_input(self, streamlit_app: Any, key: str, property: Dict) -> Any:
-
         # Add title and subheader
         streamlit_app.subheader(property.get("title"))
         if property.get("description"):
