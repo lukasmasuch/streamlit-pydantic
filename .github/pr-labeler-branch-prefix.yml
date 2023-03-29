@@ -1,5 +1,0 @@
-feature: ["feature/*", "feat/*", "enhancement/*"]
-bug: ["bugfix/*", "fix/*"]
-maintenance: ["maintenance/*", "chore/*", "refactoring/*", "test/*", "style/*"]
-documentation: ["documentation/*", "docs/*"]
-security: ["security/*"]
