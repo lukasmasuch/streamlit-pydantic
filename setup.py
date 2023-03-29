@@ -15,7 +15,7 @@ URL = "https://github.com/lukasmasuch/streamlit-pydantic"
 EMAIL = "lukas.masuch@gmail.com"
 AUTHOR = "Lukas Masuch"
 LICENSE = "MIT"
-REQUIRES_PYTHON = ">=3.6"
+REQUIRES_PYTHON = ">=3.7"
 VERSION = None  # Only set version if you like to overwrite the version in _about.py
 
 PWD = os.path.abspath(os.path.dirname(__file__))
@@ -52,6 +52,7 @@ setup(
         "dev": [
             "setuptools",
             "wheel",
+            "build",
             "twine",
             "flake8",
             "pytest",
@@ -65,6 +66,7 @@ setup(
             "lazydocs",
             "universal-build",
             "rope",
+            "colorama",
         ],
     },
     include_package_data=True,
@@ -83,7 +85,6 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",

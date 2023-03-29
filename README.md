@@ -275,10 +275,6 @@ with st.form(key="pydantic_form"):
 
 The API documentation can be found [here](./docs). To generate UI elements, you can use the high-level [`pydantic_form`](./docs/streamlit_pydantic.ui_renderer.md#function-pydantic_form) method. Or the more flexible lower-level [`pydantic_input`](./docs/streamlit_pydantic.ui_renderer.md#function-pydantic_input) and [`pydantic_output`](./docs/streamlit_pydantic.ui_renderer.md#function-pydantic_output) methods. See the [examples](#examples) section on how to use those methods.
 
-## Limitations
-
-TBD
-
 ## Contribution
 
 - Pull requests are encouraged and always welcome. Read our [contribution guidelines](https://github.com/lukasmasuch/streamlit-pydantic/tree/main/CONTRIBUTING.md) and check out [help-wanted](https://github.com/lukasmasuch/streamlit-pydantic/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+label%3A"help+wanted"+sort%3Areactions-%2B1-desc+) issues.
@@ -291,11 +287,11 @@ TBD
 To build the project and run the style/linter checks, execute:
 
 ```bash
-pip install universal-build
-python build.py --make --check
+make install
+make check
 ```
 
-Refer to our [contribution guides](https://github.com/lukasmasuch/streamlit-pydantic/blob/main/CONTRIBUTING.md#development-instructions) for more detailed information on our build scripts and development process.
+Run `make help` to see additional commands for development. 
 
 ---
 

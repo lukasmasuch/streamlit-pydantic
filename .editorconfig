@@ -30,3 +30,7 @@ indent_size = 2
 
 [*.java]
 indent_size = 2
+
+[{Makefile,**.mk}]
+# Use tabs for indentation (Makefiles require tabs)
+indent_style = tab
