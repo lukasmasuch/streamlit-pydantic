@@ -3,6 +3,7 @@ from typing import Dict, List, Set
 
 import streamlit as st
 from pydantic import BaseModel, Field
+from pydantic.color import Color
 
 import streamlit_pydantic as sp
 
@@ -43,6 +44,7 @@ class ExampleModel(BaseModel):
         description="This is ready only text.",
         readOnly=True,
     )
+    default_color: Color = Field("yellow", description="A defaulted color")
     default_object: OtherData = Field(
         OtherData(),
         description="An object embedded into the model with a default",

@@ -11,6 +11,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Type, TypeVar
 import pandas as pd
 import streamlit as st
 from pydantic import BaseModel, ValidationError, parse_obj_as
+from pydantic.color import Color
 from pydantic.json import pydantic_encoder
 
 from streamlit_pydantic import schema_utils
@@ -439,6 +440,11 @@ class InputUI:
             streamlit_kwargs["value"] = property["default"]
         elif property.get("example") is not None:
             streamlit_kwargs["value"] = property["example"]
+
+        if isinstance(streamlit_kwargs.get("value"), Color):
+            streamlit_kwargs["value"] = streamlit_kwargs["value"].as_hex()
+        elif isinstance(streamlit_kwargs.get("value"), str):
+            streamlit_kwargs["value"] = Color(streamlit_kwargs["value"]).as_hex()
 
         if property.get("format") == "text":
             # Use text input if specified format is text
