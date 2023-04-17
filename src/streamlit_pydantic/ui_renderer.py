@@ -527,6 +527,8 @@ class InputUI:
             data_dict = self._get_value(key)
         elif property.get("init_value"):
             data_dict = property.get("init_value")
+        elif property.get("default"):
+            data_dict = property.get("default")
         else:
             data_dict = {}
 
@@ -748,6 +750,8 @@ class InputUI:
 
             if property.get("init_value"):
                 new_property["init_value"] = property["init_value"].get(property_key)
+            if property.get("default"):
+                new_property["default"] = property["default"].get(property_key)
 
             new_property["readOnly"] = property.get("readOnly", False)
 
@@ -774,6 +778,8 @@ class InputUI:
         )
 
         object_reference["init_value"] = property.get("init_value", None)
+
+        object_reference["default"] = property.get("default", None)
 
         object_reference["readOnly"] = property.get("readOnly", None)
 
@@ -976,6 +982,8 @@ class InputUI:
             data_list = self._get_value(key)
         elif property.get("init_value"):
             data_list = property.get("init_value")
+        elif property.get("default"):
+            data_list = property.get("default")
         else:
             data_list = []
 
