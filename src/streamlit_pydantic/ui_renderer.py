@@ -668,9 +668,9 @@ class InputUI:
         streamlit_kwargs = self._get_default_streamlit_input_kwargs(key, property)
         overwrite_kwargs = self._get_overwrite_streamlit_kwargs(key, property)
 
-        if property.get("init_value"):
+        if "init_value" in property:
             streamlit_kwargs["value"] = property.get("init_value")
-        elif property.get("default"):
+        elif "default" in property:
             streamlit_kwargs["value"] = property.get("default")
 
         # special formatting when rendering within a list/dict
