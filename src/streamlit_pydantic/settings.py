@@ -1,7 +1,7 @@
 from typing import Any, Dict
 
 import streamlit as st
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 
 def _streamlit_secrets_source(settings: BaseSettings) -> Dict[str, Any]:
