@@ -116,7 +116,7 @@ class InputUI:
             "properties", {}
         )
         self._schema_references = self._input_class.schema(by_alias=True).get(
-            "definitions", {}
+            "$defs", {}
         )
 
         # TODO: check if state has input data
@@ -1182,7 +1182,7 @@ class OutputUI:
 
         model_schema = output_data.schema(by_alias=False)
         model_properties = model_schema.get("properties")
-        definitions = model_schema.get("definitions")
+        definitions = model_schema.get("$defs")
 
         if model_properties:
             for property_key in output_data.__dict__:
