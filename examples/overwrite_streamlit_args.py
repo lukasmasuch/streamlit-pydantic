@@ -1,9 +1,9 @@
-import streamlit as st
-from pydantic import BaseModel, Field
-
 from typing import Optional
+
+import streamlit as st
+from pydantic import Base64Bytes, BaseModel, Field
+
 import streamlit_pydantic as sp
-from streamlit_pydantic.types import FileContent
 
 
 class ExampleModel(BaseModel):
@@ -11,7 +11,7 @@ class ExampleModel(BaseModel):
     number: int = Field(
         10, st_kwargs_min_value=10, st_kwargs_max_value=100, st_kwargs_step=5
     )
-    single_file: Optional[FileContent] = Field(
+    single_file: Base64Bytes = Field(
         None,
         st_kwargs_type=["png", "jpg"],
     )
@@ -19,4 +19,7 @@ class ExampleModel(BaseModel):
 
 data = sp.pydantic_form(key="my_form", model=ExampleModel)
 if data:
-    st.json(data.json())
+    st.json(data.model_dump_json())
+
+st.subheader("Pydantic Output")
+sp.pydantic_output(data)

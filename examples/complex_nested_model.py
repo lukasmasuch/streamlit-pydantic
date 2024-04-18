@@ -2,9 +2,8 @@ from enum import Enum
 from typing import Set
 
 import streamlit as st
-from pydantic import BaseModel, Field, ValidationError, parse_obj_as
-
 import streamlit_pydantic as sp
+from pydantic import BaseModel, Field, ValidationError, parse_obj_as
 
 
 class OtherData(BaseModel):
@@ -47,4 +46,4 @@ class ExampleModel(BaseModel):
 
 data = sp.pydantic_form(key="my_form", model=ExampleModel)
 if data:
-    st.json(data.json())
+    st.json(data.model_dump_json())

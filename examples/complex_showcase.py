@@ -1,12 +1,11 @@
 import datetime
 from enum import Enum
-from typing import Dict, List, Literal, Optional, Set
+from typing import Dict, List, Literal, Set
 
 import streamlit as st
-from pydantic import BaseModel, Field, SecretStr
+from pydantic import Base64Str, BaseModel, Field, SecretStr
 
 import streamlit_pydantic as sp
-from streamlit_pydantic.types import FileContent
 
 
 class SelectionValue(str, Enum):
@@ -36,11 +35,11 @@ class ShowcaseModel(BaseModel):
         ..., ge=0, multiple_of=10, description="Positive integer with step count of 10."
     )
     float_number: float = Field(0.001)
-    date: Optional[datetime.date] = Field(
+    date: datetime.date = Field(
         datetime.date.today(),
         description="Date property. Optional because of default value.",
     )
-    time: Optional[datetime.time] = Field(
+    time: datetime.time = Field(
         datetime.datetime.now().time(),
         description="Time property. Optional because of default value.",
     )
@@ -53,11 +52,11 @@ class ShowcaseModel(BaseModel):
         description="This is a ready only text.",
         readOnly=True,
     )
-    file_list: Optional[List[FileContent]] = Field(
-        None,
+    file_list: List[Base64Str] = Field(
+        [],
         description="A list of files. Optional property.",
     )
-    single_file: Optional[FileContent] = Field(
+    single_file: Base64Str = Field(
         None,
         description="A single file. Optional property.",
     )

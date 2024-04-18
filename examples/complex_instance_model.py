@@ -1,12 +1,11 @@
 import datetime
 from enum import Enum
-from typing import Dict, List, Literal, Optional, Set
+from typing import Dict, List, Set
 
 import streamlit as st
-from pydantic import BaseModel, Field
-from pydantic.color import Color
-
 import streamlit_pydantic as sp
+from pydantic import BaseModel, Field
+from pydantic_extra_types.color import Color
 
 
 class OtherData(BaseModel):
@@ -62,7 +61,7 @@ class ExampleModel(BaseModel):
     int_dict: Dict[str, int] = Field(
         ...,
         description="Dict property with int values",
-        gt=-4,
+        # gt=-4,
     )
     date_dict: Dict[str, datetime.datetime] = Field(
         ...,
@@ -81,7 +80,7 @@ class ExampleModel(BaseModel):
         description="List of int values",
         max_items=4,
         min_items=2,
-        gt=2,
+        # gt=2,
     )
     color_list: List[Color] = Field(
         ...,

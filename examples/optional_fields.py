@@ -1,4 +1,4 @@
-from typing import Optional
+import json
 
 import streamlit as st
 from pydantic import BaseModel, Field
@@ -11,12 +11,13 @@ class ExampleModel(BaseModel):
     some_number: int
     some_boolean: bool
     optional_boolean: bool = False
-    optional_text: Optional[str]
+    optional_text: str = None
     optional_number: int = Field(20)
 
 
-data = sp.pydantic_form(
+data = sp.pydantic_input(
     key="my_form", model=ExampleModel, group_optional_fields="expander"
 )
+
 if data:
-    st.json(data.json())
+    st.json(json.dumps(data))

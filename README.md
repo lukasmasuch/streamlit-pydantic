@@ -73,7 +73,7 @@ pip install streamlit-pydantic
 
     data = sp.pydantic_form(key="my_form", model=ExampleModel)
     if data:
-        st.json(data.json())
+        st.json(data.model_dump_json())
     ```
 
 2. Run the streamlit server on the python script: `streamlit run my_script.py`
@@ -108,7 +108,7 @@ class ExampleModel(BaseModel):
 
 data = sp.pydantic_form(key="my_form", model=ExampleModel)
 if data:
-    st.json(data.json())
+    st.json(data.model_dump_json())
 ```
 
 ### Date Validation
@@ -129,7 +129,7 @@ class ExampleModel(BaseModel):
 
 data = sp.pydantic_form(key="my_form", model=ExampleModel)
 if data:
-    st.json(data.json())
+    st.json(data.model_dump_json())
 ```
 
 ### Dataclasses Support
@@ -201,7 +201,7 @@ class ExampleModel(BaseModel):
 
 data = sp.pydantic_form(key="my_form", model=ExampleModel)
 if data:
-    st.json(data.json())
+    st.json(data.model_dump_json())
 ```
 
 ### Render Input

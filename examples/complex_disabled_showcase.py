@@ -1,13 +1,12 @@
 import datetime
 from enum import Enum
-from typing import Dict, List, Literal, Optional, Set
+from typing import Dict, List, Literal, Set
 
 import streamlit as st
-from pydantic import BaseModel, Field, SecretStr
-from pydantic.color import Color
+from pydantic import Base64Str, BaseModel, Field, SecretStr
+from pydantic_extra_types.color import Color
 
 import streamlit_pydantic as sp
-from streamlit_pydantic.types import FileContent
 
 
 class SelectionValue(str, Enum):
@@ -46,17 +45,17 @@ class DisabledModel(BaseModel):
         description="Positive integer with step count of 10.",
     )
     float_number: float = Field(0.001, readOnly=True)
-    date: Optional[datetime.date] = Field(
+    date: datetime.date = Field(
         datetime.date.today(),
         readOnly=True,
         description="Date property. Optional because of default value.",
     )
-    time: Optional[datetime.time] = Field(
+    time: datetime.time = Field(
         datetime.datetime.now().time(),
         readOnly=True,
         description="Time property. Optional because of default value.",
     )
-    dt: Optional[datetime.datetime] = Field(
+    dt: datetime.datetime = Field(
         datetime.datetime.now(),
         readOnly=True,
         description="Datetime property. Optional because of default value.",
@@ -76,12 +75,12 @@ class DisabledModel(BaseModel):
         description="This is a read only text.",
         readOnly=True,
     )
-    file_list: Optional[List[FileContent]] = Field(
-        None,
+    file_list: List[Base64Str] = Field(
+        [],
         readOnly=True,
         description="A list of files. Optional property.",
     )
-    single_file: Optional[FileContent] = Field(
+    single_file: Base64Str = Field(
         None,
         readOnly=True,
         description="A single file. Optional property.",
@@ -133,6 +132,8 @@ instance = DisabledModel(
     boolean=True,
     colour=Color("Yellow"),
     read_only_text="INSTANCE read only text",
+    file_list=[],
+    single_file=b"",
     single_selection=SelectionValue.FOO,
     single_selection_with_literal="bar",
     multi_selection=[SelectionValue.FOO, SelectionValue.BAR],
@@ -149,10 +150,16 @@ instance = DisabledModel(
 )
 
 
-session_data = sp.pydantic_input(
-    key="my_disabled_input",
-    model=instance,
+from_model_tab, from_instance_tab = st.tabs(
+    ["Form inputs from model", "Form inputs from instance"]
 )
 
-with st.expander("Current Input State", expanded=False):
-    st.json(session_data)
+with from_model_tab:
+    data = sp.pydantic_input(key="my_disabled_model", model=DisabledModel)
+    with st.expander("Current Input State", expanded=False):
+        st.json(data)
+
+with from_instance_tab:
+    data = sp.pydantic_input(key="my_disabled_instance", model=instance)
+    with st.expander("Current Input State", expanded=False):
+        st.json(data)
