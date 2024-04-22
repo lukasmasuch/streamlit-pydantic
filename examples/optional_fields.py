@@ -15,9 +15,9 @@ class ExampleModel(BaseModel):
     optional_number: int = Field(20)
 
 
-data = sp.pydantic_input(
+data = sp.pydantic_form(
     key="my_form", model=ExampleModel, group_optional_fields="expander"
 )
 
 if data:
-    st.json(json.dumps(data))
+    st.json(data.model_dump())
