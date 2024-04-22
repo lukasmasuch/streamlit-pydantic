@@ -61,7 +61,7 @@ def is_single_number_property(property: Dict) -> bool:
 def is_single_file_property(property: Dict) -> bool:
     if property.get("type") != "string":
         return False
-    return property.get("format") == "base64"
+    return property.get("format") in ["base64", "base64url"]
 
 
 def is_multi_enum_property(property: Dict, references: Dict) -> bool:
@@ -119,7 +119,7 @@ def is_multi_file_property(property: Dict) -> bool:
         return False
 
     try:
-        return property["items"]["format"] == "base64"
+        return property["items"]["format"] in ["base64", "base64url"]
     except Exception:
         return False
 

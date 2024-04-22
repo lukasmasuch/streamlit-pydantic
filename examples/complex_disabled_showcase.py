@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Dict, List, Literal, Set
 
 import streamlit as st
-from pydantic import Base64Str, BaseModel, Field, SecretStr
+from pydantic import Base64UrlBytes, BaseModel, Field, SecretStr
 from pydantic_extra_types.color import Color
 
 import streamlit_pydantic as sp
@@ -75,12 +75,12 @@ class DisabledModel(BaseModel):
         description="This is a read only text.",
         readOnly=True,
     )
-    file_list: List[Base64Str] = Field(
+    file_list: List[Base64UrlBytes] = Field(
         [],
         readOnly=True,
         description="A list of files. Optional property.",
     )
-    single_file: Base64Str = Field(
+    single_file: Base64UrlBytes = Field(
         None,
         readOnly=True,
         description="A single file. Optional property.",

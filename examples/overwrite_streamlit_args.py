@@ -1,7 +1,7 @@
 from typing import Optional
 
 import streamlit as st
-from pydantic import Base64Bytes, BaseModel, Field
+from pydantic import Base64UrlBytes, BaseModel, Field
 
 import streamlit_pydantic as sp
 
@@ -11,8 +11,8 @@ class ExampleModel(BaseModel):
     number: int = Field(
         10, st_kwargs_min_value=10, st_kwargs_max_value=100, st_kwargs_step=5
     )
-    single_file: Base64Bytes = Field(
-        None,
+    single_file: Base64UrlBytes = Field(
+        b"",
         st_kwargs_type=["png", "jpg"],
     )
 

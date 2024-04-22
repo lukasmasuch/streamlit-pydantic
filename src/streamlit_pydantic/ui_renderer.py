@@ -1,3 +1,4 @@
+import base64
 import contextlib
 import dataclasses
 import datetime
@@ -388,20 +389,20 @@ class InputUI:
             }
         )
         if uploaded_file is None:
-            return None
+            return b""
 
-        bytes = uploaded_file.getvalue()
+        file_bytes = uploaded_file.getvalue()
         if getattr(uploaded_file, "type"):
             if _is_compatible_audio(uploaded_file.type):
                 # Show audio
-                streamlit_app.audio(bytes, format=uploaded_file.type)
+                streamlit_app.audio(file_bytes, format=uploaded_file.type)
             if _is_compatible_image(uploaded_file.type):
                 # Show image
-                streamlit_app.image(bytes)
+                streamlit_app.image(file_bytes)
             if _is_compatible_video(uploaded_file.type):
                 # Show video
-                streamlit_app.video(bytes, format=uploaded_file.type)
-        return bytes
+                streamlit_app.video(file_bytes, format=uploaded_file.type)
+        return base64.urlsafe_b64encode(file_bytes)
 
     def _render_single_string_input(
         self, streamlit_app: Any, key: str, property: Dict
@@ -1124,7 +1125,7 @@ class OutputUI:
         streamlit.subheader(property_schema.get("title"))
         if property_schema.get("description"):
             streamlit.markdown(property_schema.get("description"))
-        if value is None or value == "":
+        if value is None or len(value) == 0:
             streamlit.info("No value returned!")
         else:
             # TODO: detect if it is base64
@@ -1134,15 +1135,15 @@ class OutputUI:
                 file_extension = mimetypes.guess_extension(mime_type) or ""
 
                 if _is_compatible_audio(mime_type):
-                    streamlit.audio(value.as_bytes(), format=mime_type)
+                    streamlit.audio(value, format=mime_type)
                     return
 
                 if _is_compatible_image(mime_type):
-                    streamlit.image(value.as_bytes())
+                    streamlit.image(value)
                     return
 
                 if _is_compatible_video(mime_type):
-                    streamlit.video(value.as_bytes(), format=mime_type)
+                    streamlit.video(value, format=mime_type)
                     return
 
             filename = (
@@ -1206,6 +1207,13 @@ class OutputUI:
                     continue
 
                 if property_schema:
+                    if schema_utils.is_multi_file_property(property_schema):
+                        for file in output_property_value:
+                            self._render_single_file_property(
+                                streamlit, property_schema, file
+                            )
+                        continue
+
                     if schema_utils.is_single_file_property(property_schema):
                         self._render_single_file_property(
                             streamlit, property_schema, output_property_value
@@ -1227,6 +1235,12 @@ class OutputUI:
                     ):
                         self._render_single_text_property(
                             streamlit, property_schema, output_property_value.value
+                        )
+                        continue
+
+                    if isinstance(output_property_value, (set, dict, tuple)):
+                        self._render_single_text_property(
+                            streamlit, property_schema, output_property_value
                         )
                         continue
 
@@ -1352,7 +1366,7 @@ def pydantic_form(
             try:
                 return model.model_validate(input_state)
             except ValidationError as ex:
-                error_text = "**Whoops! There were some problems with your input:**"
+                error_text = "**Form inputs failed validation:**"
                 for error in ex.errors():
                     if "loc" in error and "msg" in error:
                         location = ".".join(error["loc"]).replace("__root__.", "")  # type: ignore
