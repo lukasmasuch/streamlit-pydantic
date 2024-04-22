@@ -110,14 +110,12 @@ class InputUI:
         self._ignore_empty_values = ignore_empty_values
 
         if dataclasses.is_dataclass(model):
-            # Convert dataclasses
             self._input_class = model
             if isinstance(model, type):
                 self._input_schema = TypeAdapter(
                     pydantic_dataclasses.dataclass(model)
                 ).json_schema()
             else:
-                # When model is a dataclass instance, do a full conversion to a BaseModel instance
                 self._input_schema = TypeAdapter(
                     pydantic_dataclasses.dataclass(model.__class__)
                 ).json_schema()
