@@ -3,9 +3,8 @@ from enum import Enum
 from typing import Dict, List, Literal, Set
 
 import streamlit as st
-from pydantic import Base64UrlBytes, BaseModel, Field, SecretStr
-
 import streamlit_pydantic as sp
+from pydantic import Base64UrlBytes, BaseModel, Field, SecretStr
 
 
 class SelectionValue(str, Enum):
@@ -57,7 +56,7 @@ class ShowcaseModel(BaseModel):
         description="A list of files. Optional property.",
     )
     single_file: Base64UrlBytes = Field(
-        None,
+        b"",
         description="A single file. Optional property.",
     )
     single_selection: SelectionValue = Field(
@@ -92,9 +91,10 @@ class ShowcaseModel(BaseModel):
     )
 
 
-session_data = sp.pydantic_input(
-    key="my_input", model=ShowcaseModel, group_optional_fields="sidebar"
+data = sp.pydantic_input(
+    key="my_showcase_input", model=ShowcaseModel, group_optional_fields="sidebar"
 )
 
-with st.expander("Current Input State", expanded=False):
-    st.json(session_data)
+if data:
+    with st.expander("Current Input State", expanded=False):
+        st.json(data)

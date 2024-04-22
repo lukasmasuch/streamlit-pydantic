@@ -4,7 +4,7 @@ from typing import Annotated, Dict, List, Set
 
 import streamlit as st
 from annotated_types import Gt
-from pydantic import BaseModel, Field, NegativeInt, PositiveInt
+from pydantic import BaseModel, Field
 from pydantic_extra_types.color import Color
 
 import streamlit_pydantic as sp
@@ -136,15 +136,19 @@ from_model_tab, from_instance_tab = st.tabs(
 )
 
 with from_model_tab:
-    data = sp.pydantic_input(key="my_input_model", model=ExampleModel)
-    with st.expander("Current Input State", expanded=False):
-        st.json(data)
+    data = sp.pydantic_input(key="my_complex_input_model", model=ExampleModel)
+    if data:
+        with st.expander("Current Input State", expanded=False):
+            st.json(data)
 
 
 with from_instance_tab:
-    data = sp.pydantic_input(key="my_input_instance", model=instance)
-    with st.expander("Current Input State", expanded=False):
-        st.json(data)
+    instance_input_data = sp.pydantic_input(
+        key="my_complex_input_instance", model=instance
+    )
+    if instance_input_data:
+        with st.expander("Current Input State", expanded=False):
+            st.json(instance_input_data)
 
 st.markdown("---")
 
