@@ -92,8 +92,10 @@ class InputUI:
         group_optional_fields: GroupOptionalFieldsStrategy = "no",  # type: ignore
         lowercase_labels: bool = False,
         ignore_empty_values: bool = False,
+        return_model: bool = False,
     ):
         self._key = key
+        self._return_model = return_model
 
         self._session_state = st.session_state
 
@@ -113,23 +115,20 @@ class InputUI:
         if dataclasses.is_dataclass(model):
             self._input_class = model
             if isinstance(model, type):
-                self._input_schema = TypeAdapter(
-                    pydantic_dataclasses.dataclass(model)
-                ).json_schema()
+                self._type_adapter = TypeAdapter(pydantic_dataclasses.dataclass(model))
             else:
-                self._input_schema = TypeAdapter(
+                self._type_adapter = TypeAdapter(
                     pydantic_dataclasses.dataclass(model.__class__)
-                ).json_schema()
-
+                )
+            self._input_schema = self._type_adapter.json_schema()
         else:
+            self._type_adapter = None
             self._input_schema = model.model_json_schema(by_alias=True)
             self._input_class = model
 
         self._schema_properties = self._input_schema.get("properties", {})
         self._schema_references = self._input_schema.get("$defs", {})
         self._schema_required = self._input_schema.get("required", {})
-
-        # TODO: check if state has input data
 
     def render_ui(self) -> Dict:
         if _has_input_ui_renderer(self._input_class):
@@ -212,7 +211,37 @@ class InputUI:
                     except Exception:
                         pass
 
-        return self._session_state[self._session_input_key]
+        input_state = self._session_state[self._session_input_key]
+
+        if self._return_model:
+            # Validate and return a BaseModel or DataClass instance
+            try:
+                if self._type_adapter is not None:
+                    self._type_adapter.validate_python(input_state)
+                    if isinstance(self._input_class, type):
+                        # DataClass model
+                        return self._input_class(**input_state)
+                    else:
+                        # DataClass instance
+                        return self._input_class.__class__(**input_state)
+                else:
+                    # BaseModel
+                    return self._input_class.model_validate(input_state)
+
+            except ValidationError as ex:
+                error_text = "**Input failed validation:**"
+                for error in ex.errors():
+                    if "loc" in error and "msg" in error:
+                        location = ".".join(error["loc"]).replace("__root__.", "")  # type: ignore
+                        error_msg = f"**{location}:** " + error["msg"]
+                        error_text += "\n\n" + error_msg
+                    else:
+                        # Fallback
+                        error_text += "\n\n" + str(error)
+                st.warning(error_text)
+                return None
+        else:
+            return input_state
 
     def _get_overwrite_streamlit_kwargs(self, key: str, property: Dict) -> Dict:
         streamlit_kwargs: Dict = {}
@@ -1309,6 +1338,7 @@ def pydantic_input(
         group_optional_fields=group_optional_fields,
         lowercase_labels=lowercase_labels,
         ignore_empty_values=ignore_empty_values,
+        return_model=False,
     ).render_ui()
 
 
@@ -1353,28 +1383,15 @@ def pydantic_form(
     """
 
     with st.form(key=key, clear_on_submit=clear_on_submit):
-        input_state = pydantic_input(
+        input_state = InputUI(
             key,
             model,
             group_optional_fields=group_optional_fields,
             lowercase_labels=lowercase_labels,
             ignore_empty_values=ignore_empty_values,
-        )
-        submit_button = st.form_submit_button(label=submit_label)
+            return_model=True,
+        ).render_ui()
 
-        if submit_button:
-            try:
-                return model.model_validate(input_state)
-            except ValidationError as ex:
-                error_text = "**Form inputs failed validation:**"
-                for error in ex.errors():
-                    if "loc" in error and "msg" in error:
-                        location = ".".join(error["loc"]).replace("__root__.", "")  # type: ignore
-                        error_msg = f"**{location}:** " + error["msg"]
-                        error_text += "\n\n" + error_msg
-                    else:
-                        # Fallback
-                        error_text += "\n\n" + str(error)
-                st.error(error_text)
-                return None
+        if st.form_submit_button(label=submit_label):
+            return input_state
     return None
