@@ -2,8 +2,9 @@ from enum import Enum
 from typing import Set
 
 import streamlit as st
+from pydantic import BaseModel, Field
+
 import streamlit_pydantic as sp
-from pydantic import BaseModel, Field, ValidationError, parse_obj_as
 
 
 class OtherData(BaseModel):
