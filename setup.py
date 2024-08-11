@@ -45,7 +45,13 @@ setup(
     package_dir={"": "src"},
     py_modules=[splitext(basename(path))[0] for path in glob("src/*.py")],
     zip_safe=False,
-    install_requires=["streamlit>=1.14.0", "pydantic>=2.0", "pydantic-settings>=2.0", "pydantic-extra-types>=2.6.0","importlib-resources"],
+    install_requires=[
+        "streamlit>=1.30.0",
+        "pydantic>=2.0",
+        "pydantic-settings>=2.0",
+        "pydantic-extra-types>=2.6.0",
+        "importlib-resources",
+    ],
     # deprecated: dependency_links=dependency_links,
     extras_require={
         # extras can be installed via: pip install package[dev]

@@ -134,8 +134,11 @@ class InputUI:
         if _has_input_ui_renderer(self._input_class):
             # The input model has a rendering function
             # The rendering also returns the current state of input data
-            self._session_state[self._session_input_key] = self._input_class.render_input_ui(  # type: ignore
-                self._streamlit_container, self._session_state[self._session_input_key]
+            self._session_state[
+                self._session_input_key
+            ] = self._input_class.render_input_ui(  # type: ignore
+                self._streamlit_container,
+                self._session_state[self._session_input_key],
             ).model_dump()
             return self._session_state[self._session_input_key]
 
@@ -220,14 +223,13 @@ class InputUI:
                     self._type_adapter.validate_python(input_state)
                     if isinstance(self._input_class, type):
                         # DataClass model
-                        return self._input_class(**input_state)
+                        return self._input_class(**input_state)  # type: ignore
                     else:
                         # DataClass instance
                         return self._input_class.__class__(**input_state)
                 else:
                     # BaseModel
-                    return self._input_class.model_validate(input_state)
-
+                    return self._input_class.model_validate(input_state)  # type: ignore
             except ValidationError as ex:
                 error_text = "**Input failed validation:**"
                 for error in ex.errors():
@@ -239,7 +241,7 @@ class InputUI:
                         # Fallback
                         error_text += "\n\n" + str(error)
                 st.warning(error_text)
-                return None
+                return None  # type: ignore
         else:
             return input_state
 
@@ -266,7 +268,7 @@ class InputUI:
         streamlit_kwargs = {
             "label": label,
             "key": str(self._session_state.run_id) + "-" + str(self._key) + "-" + key,
-            "disabled": disabled
+            "disabled": disabled,
             # "on_change": detect_change, -> not supported for inside forms
             # "args": (key,),
         }
@@ -378,9 +380,10 @@ class InputUI:
                     date_kwargs["label"] = "Date"
                     date_kwargs["key"] = (f"{streamlit_kwargs.get('key')}-date-input",)
 
-                    if streamlit_kwargs.get("value"):
+                    value = streamlit_kwargs.get("value")
+                    if value:
                         with contextlib.suppress(Exception):
-                            date_kwargs["value"] = streamlit_kwargs.get("value").date()
+                            date_kwargs["value"] = value.date()
                     selected_date = self._streamlit_container.date_input(**date_kwargs)
 
                 with time_col:
@@ -388,9 +391,10 @@ class InputUI:
                     time_kwargs["label"] = "Time"
                     time_kwargs["key"] = f"{streamlit_kwargs.get('key')}-time-input"
 
-                    if streamlit_kwargs.get("value"):
+                    value = streamlit_kwargs.get("value")
+                    if value:
                         with contextlib.suppress(Exception):
-                            time_kwargs["value"] = streamlit_kwargs.get("value").time()
+                            time_kwargs["value"] = value.time()
                     selected_time = self._streamlit_container.time_input(**time_kwargs)
 
                 return datetime.datetime.combine(selected_date, selected_time)
@@ -1393,5 +1397,5 @@ def pydantic_form(
         ).render_ui()
 
         if st.form_submit_button(label=submit_label):
-            return input_state
+            return input_state  # type: ignore
     return None
