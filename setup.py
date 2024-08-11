@@ -71,8 +71,7 @@ setup(
     },
     include_package_data=True,
     package_data={
-        # If there are data files included in your packages that need to be
-        # 'sample': ['package_data.dat'],
+        MAIN_PACKAGE: ["py.typed"],
     },
     classifiers=[
         # TODO: Update based on https://pypi.org/classifiers/
