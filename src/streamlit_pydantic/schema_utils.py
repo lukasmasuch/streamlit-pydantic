@@ -24,7 +24,13 @@ def get_union_references(property: Dict, references: Dict) -> List[Dict]:
     union_references = property.get("oneOf", property.get("anyOf"))
     resolved_references: List[Dict] = []
     for reference in union_references:  # type: ignore
-        resolved_references.append(resolve_reference(reference["$ref"], references))
+        if reference.get("oneOf") is not None:
+            for disc_ref in reference["oneOf"]:
+                resolved_references.append(
+                    resolve_reference(disc_ref["$ref"], references)
+                )
+        elif reference.get("$ref") is not None:
+            resolved_references.append(resolve_reference(reference["$ref"], references))
     return resolved_references
 
 
@@ -55,8 +61,7 @@ def is_single_number_property(property: Dict) -> bool:
 def is_single_file_property(property: Dict) -> bool:
     if property.get("type") != "string":
         return False
-    # TODO: binary?
-    return property.get("format") == "byte"
+    return property.get("format") in ["base64", "base64url"]
 
 
 def is_multi_enum_property(property: Dict, references: Dict) -> bool:
@@ -114,8 +119,7 @@ def is_multi_file_property(property: Dict) -> bool:
         return False
 
     try:
-        # TODO: binary
-        return property["items"]["format"] == "byte"
+        return property["items"]["format"] in ["base64", "base64url"]
     except Exception:
         return False
 
@@ -132,7 +136,7 @@ def is_single_object(property: Dict, references: Dict) -> bool:
 
 def is_union_property(property: Dict) -> bool:
     # anyOf is used for union property prior to pydantic < 1.10
-    union_prop = property.get("oneOf", property.get("anyOf"))
+    union_prop = property.get("anyOf")
 
     if union_prop is None:
         return False
@@ -140,8 +144,19 @@ def is_union_property(property: Dict) -> bool:
     if len(union_prop) == 0:  # type: ignore
         return False
 
+    discriminated = False
+
     for reference in union_prop:  # type: ignore
-        if not is_single_reference(reference):
+        if (
+            reference.get("oneOf") is not None
+            or reference.get("discriminated") is not None
+        ):
+            discriminated = True
+            for discriminated_reference in reference.get("oneOf"):  # type: ignore
+                if not is_single_reference(discriminated_reference):
+                    return False
+
+        if not discriminated and not is_single_reference(reference):
             return False
 
     return True

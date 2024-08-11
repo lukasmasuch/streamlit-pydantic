@@ -1,3 +1,4 @@
+import base64
 import contextlib
 import dataclasses
 import datetime
@@ -10,13 +11,25 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Type, TypeVar
 
 import pandas as pd
 import streamlit as st
-from pydantic import BaseModel, ValidationError, parse_obj_as
-from pydantic.color import Color
-from pydantic.json import pydantic_encoder
+from pydantic import BaseModel, TypeAdapter, ValidationError
+from pydantic import dataclasses as pydantic_dataclasses
+from pydantic_extra_types.color import Color
 
 from streamlit_pydantic import schema_utils
 
 _OVERWRITE_STREAMLIT_KWARGS_PREFIX = "st_kwargs_"
+
+
+def _pydantic_encoder(obj: Any) -> Any:
+    """Simplified version of pydantic v1's deprecated json encoder."""
+    if isinstance(obj, BaseModel):
+        return obj.model_dump(mode="json")
+    elif dataclasses.is_dataclass(obj):
+        return dataclasses.asdict(obj)
+
+    raise TypeError(
+        f"Object of type '{obj.__class__.__name__}' is not JSON serializable"
+    )
 
 
 def _name_to_title(name: str) -> str:
@@ -79,8 +92,10 @@ class InputUI:
         group_optional_fields: GroupOptionalFieldsStrategy = "no",  # type: ignore
         lowercase_labels: bool = False,
         ignore_empty_values: bool = False,
+        return_model: bool = False,
     ):
         self._key = key
+        self._return_model = return_model
 
         self._session_state = st.session_state
 
@@ -98,28 +113,22 @@ class InputUI:
         self._ignore_empty_values = ignore_empty_values
 
         if dataclasses.is_dataclass(model):
-            # Convert dataclasses
-            import pydantic
-
+            self._input_class = model
             if isinstance(model, type):
-                self._input_class = pydantic.dataclasses.dataclass(model).__pydantic_model__  # type: ignore
+                self._type_adapter = TypeAdapter(pydantic_dataclasses.dataclass(model))
             else:
-                # When model is a dataclass instance, do a full conversion to a BaseModel instance
-                self._input_class = pydantic.dataclasses.dataclass(
-                    model.__class__  # type: ignore
-                ).__pydantic_model__(**model.__dict__)
-
+                self._type_adapter = TypeAdapter(
+                    pydantic_dataclasses.dataclass(model.__class__)
+                )
+            self._input_schema = self._type_adapter.json_schema()
         else:
+            self._type_adapter = None
+            self._input_schema = model.model_json_schema(by_alias=True)
             self._input_class = model
 
-        self._schema_properties = self._input_class.schema(by_alias=True).get(
-            "properties", {}
-        )
-        self._schema_references = self._input_class.schema(by_alias=True).get(
-            "$defs", {}
-        )
-
-        # TODO: check if state has input data
+        self._schema_properties = self._input_schema.get("properties", {})
+        self._schema_references = self._input_schema.get("$defs", {})
+        self._schema_required = self._input_schema.get("required", {})
 
     def render_ui(self) -> Dict:
         if _has_input_ui_renderer(self._input_class):
@@ -127,26 +136,25 @@ class InputUI:
             # The rendering also returns the current state of input data
             self._session_state[self._session_input_key] = self._input_class.render_input_ui(  # type: ignore
                 self._streamlit_container, self._session_state[self._session_input_key]
-            ).dict()
+            ).model_dump()
             return self._session_state[self._session_input_key]
-
-        required_properties = self._input_class.schema(by_alias=True).get(
-            "required", []
-        )
 
         properties_in_expander = []
 
         # check if the input_class is an instance and build value dicts
         if isinstance(self._input_class, BaseModel):
-            instance_dict = self._input_class.dict()
-            instance_dict_by_alias = self._input_class.dict(by_alias=True)
+            instance_dict = self._input_class.model_dump()
+            instance_dict_by_alias = self._input_class.model_dump(by_alias=True)
+        elif isinstance(self._input_class.__class__, type):  # for dataclasses
+            instance_dict = dict(self._input_class.__dict__)
+            instance_dict_by_alias = None
         else:
             instance_dict = None
             instance_dict_by_alias = None
 
         for property_key in self._schema_properties.keys():
             streamlit_app = self._streamlit_container
-            if property_key not in required_properties:
+            if property_key not in self._schema_required:
                 if self._group_optional_fields == "sidebar":
                     streamlit_app = self._streamlit_container.sidebar
                 elif self._group_optional_fields == "expander":
@@ -203,7 +211,37 @@ class InputUI:
                     except Exception:
                         pass
 
-        return self._session_state[self._session_input_key]
+        input_state = self._session_state[self._session_input_key]
+
+        if self._return_model:
+            # Validate and return a BaseModel or DataClass instance
+            try:
+                if self._type_adapter is not None:
+                    self._type_adapter.validate_python(input_state)
+                    if isinstance(self._input_class, type):
+                        # DataClass model
+                        return self._input_class(**input_state)
+                    else:
+                        # DataClass instance
+                        return self._input_class.__class__(**input_state)
+                else:
+                    # BaseModel
+                    return self._input_class.model_validate(input_state)
+
+            except ValidationError as ex:
+                error_text = "**Input failed validation:**"
+                for error in ex.errors():
+                    if "loc" in error and "msg" in error:
+                        location = ".".join(error["loc"]).replace("__root__.", "")  # type: ignore
+                        error_msg = f"**{location}:** " + error["msg"]
+                        error_text += "\n\n" + error_msg
+                    else:
+                        # Fallback
+                        error_text += "\n\n" + str(error)
+                st.warning(error_text)
+                return None
+        else:
+            return input_state
 
     def _get_overwrite_streamlit_kwargs(self, key: str, property: Dict) -> Dict:
         streamlit_kwargs: Dict = {}
@@ -336,27 +374,23 @@ class InputUI:
                 else:
                     date_col, time_col = self._streamlit_container.columns(2)
                 with date_col:
-                    date_kwargs = {
-                        "label": "Date",
-                        "key": f"{streamlit_kwargs.get('key')}-date-input",
-                    }
+                    date_kwargs = {**{**streamlit_kwargs, **overwrite_kwargs}}
+                    date_kwargs["label"] = "Date"
+                    date_kwargs["key"] = (f"{streamlit_kwargs.get('key')}-date-input",)
+
                     if streamlit_kwargs.get("value"):
                         with contextlib.suppress(Exception):
-                            date_kwargs["value"] = streamlit_kwargs.get(  # type: ignore
-                                "value"
-                            ).date()
+                            date_kwargs["value"] = streamlit_kwargs.get("value").date()
                     selected_date = self._streamlit_container.date_input(**date_kwargs)
 
                 with time_col:
-                    time_kwargs = {
-                        "label": "Time",
-                        "key": f"{streamlit_kwargs.get('key')}-time-input",
-                    }
+                    time_kwargs = {**{**streamlit_kwargs, **overwrite_kwargs}}
+                    time_kwargs["label"] = "Time"
+                    time_kwargs["key"] = f"{streamlit_kwargs.get('key')}-time-input"
+
                     if streamlit_kwargs.get("value"):
                         with contextlib.suppress(Exception):
-                            time_kwargs["value"] = streamlit_kwargs.get(  # type: ignore
-                                "value"
-                            ).time()
+                            time_kwargs["value"] = streamlit_kwargs.get("value").time()
                     selected_time = self._streamlit_container.time_input(**time_kwargs)
 
                 return datetime.datetime.combine(selected_date, selected_time)
@@ -384,20 +418,20 @@ class InputUI:
             }
         )
         if uploaded_file is None:
-            return None
+            return b""
 
-        bytes = uploaded_file.getvalue()
-        if property.get("mime_type"):
-            if _is_compatible_audio(property["mime_type"]):
+        file_bytes = uploaded_file.getvalue()
+        if getattr(uploaded_file, "type"):
+            if _is_compatible_audio(uploaded_file.type):
                 # Show audio
-                streamlit_app.audio(bytes, format=property.get("mime_type"))
-            if _is_compatible_image(property["mime_type"]):
+                streamlit_app.audio(file_bytes, format=uploaded_file.type)
+            if _is_compatible_image(uploaded_file.type):
                 # Show image
-                streamlit_app.image(bytes)
-            if _is_compatible_video(property["mime_type"]):
+                streamlit_app.image(file_bytes)
+            if _is_compatible_video(uploaded_file.type):
                 # Show video
-                streamlit_app.video(bytes, format=property.get("mime_type"))
-        return bytes
+                streamlit_app.video(file_bytes, format=uploaded_file.type)
+        return base64.urlsafe_b64encode(file_bytes)
 
     def _render_single_string_input(
         self, streamlit_app: Any, key: str, property: Dict
@@ -1120,10 +1154,9 @@ class OutputUI:
         streamlit.subheader(property_schema.get("title"))
         if property_schema.get("description"):
             streamlit.markdown(property_schema.get("description"))
-        if value is None or value == "":
+        if value is None or len(value) == 0:
             streamlit.info("No value returned!")
         else:
-            # TODO: Detect if it is a FileContent instance
             # TODO: detect if it is base64
             file_extension = ""
             if "mime_type" in property_schema:
@@ -1131,15 +1164,15 @@ class OutputUI:
                 file_extension = mimetypes.guess_extension(mime_type) or ""
 
                 if _is_compatible_audio(mime_type):
-                    streamlit.audio(value.as_bytes(), format=mime_type)
+                    streamlit.audio(value, format=mime_type)
                     return
 
                 if _is_compatible_image(mime_type):
-                    streamlit.image(value.as_bytes())
+                    streamlit.image(value)
                     return
 
                 if _is_compatible_video(mime_type):
-                    streamlit.video(value.as_bytes(), format=mime_type)
+                    streamlit.video(value, format=mime_type)
                     return
 
             filename = (
@@ -1148,10 +1181,7 @@ class OutputUI:
                 .strip()
                 .replace(" ", "-")
             )
-            streamlit.markdown(
-                f'<a href="data:application/octet-stream;base64,{value}" download="{filename}"><input type="button" value="Download File"></a>',
-                unsafe_allow_html=True,
-            )
+            st.download_button("Download File", value, file_name=filename)
 
     def _render_single_complex_property(
         self, streamlit: Any, property_schema: Dict, value: Any
@@ -1161,7 +1191,7 @@ class OutputUI:
         if property_schema.get("description"):
             streamlit.markdown(property_schema.get("description"))
 
-        streamlit.json(json.dumps(value, default=pydantic_encoder))
+        streamlit.json(json.dumps(value, default=_pydantic_encoder))
 
     def _render_single_output(self, streamlit: Any, output_data: BaseModel) -> None:
         try:
@@ -1180,7 +1210,7 @@ class OutputUI:
             #    "Failed to execute custom render_output_ui function. Using auto-generation instead"
             # )
 
-        model_schema = output_data.schema(by_alias=False)
+        model_schema = output_data.model_json_schema(by_alias=False)
         model_properties = model_schema.get("properties")
         definitions = model_schema.get("$defs")
 
@@ -1206,6 +1236,13 @@ class OutputUI:
                     continue
 
                 if property_schema:
+                    if schema_utils.is_multi_file_property(property_schema):
+                        for file in output_property_value:
+                            self._render_single_file_property(
+                                streamlit, property_schema, file
+                            )
+                        continue
+
                     if schema_utils.is_single_file_property(property_schema):
                         self._render_single_file_property(
                             streamlit, property_schema, output_property_value
@@ -1227,6 +1264,12 @@ class OutputUI:
                     ):
                         self._render_single_text_property(
                             streamlit, property_schema, output_property_value.value
+                        )
+                        continue
+
+                    if isinstance(output_property_value, (set, dict, tuple)):
+                        self._render_single_text_property(
+                            streamlit, property_schema, output_property_value
                         )
                         continue
 
@@ -1260,7 +1303,7 @@ class OutputUI:
                     # Render using the render function
                     data_item.render_output_ui(streamlit)  # type: ignore
                     continue
-                data_items.append(data_item.dict())
+                data_items.append(data_item.model_dump())
             # Try to show as dataframe
             streamlit.table(pd.DataFrame(data_items))
         except Exception:
@@ -1295,6 +1338,7 @@ def pydantic_input(
         group_optional_fields=group_optional_fields,
         lowercase_labels=lowercase_labels,
         ignore_empty_values=ignore_empty_values,
+        return_model=False,
     ).render_ui()
 
 
@@ -1339,32 +1383,15 @@ def pydantic_form(
     """
 
     with st.form(key=key, clear_on_submit=clear_on_submit):
-        input_state = pydantic_input(
+        input_state = InputUI(
             key,
             model,
             group_optional_fields=group_optional_fields,
             lowercase_labels=lowercase_labels,
             ignore_empty_values=ignore_empty_values,
-        )
-        submit_button = st.form_submit_button(label=submit_label)
+            return_model=True,
+        ).render_ui()
 
-        if submit_button:
-            try:
-                # check if the model is an instance before parsing
-                if isinstance(model, BaseModel):
-                    return parse_obj_as(model.__class__, input_state)
-                else:
-                    return parse_obj_as(model, input_state)
-            except ValidationError as ex:
-                error_text = "**Whoops! There were some problems with your input:**"
-                for error in ex.errors():
-                    if "loc" in error and "msg" in error:
-                        location = ".".join(error["loc"]).replace("__root__.", "")  # type: ignore
-                        error_msg = f"**{location}:** " + error["msg"]
-                        error_text += "\n\n" + error_msg
-                    else:
-                        # Fallback
-                        error_text += "\n\n" + str(error)
-                st.error(error_text)
-                return None
+        if st.form_submit_button(label=submit_label):
+            return input_state
     return None

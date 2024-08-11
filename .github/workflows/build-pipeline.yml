@@ -32,7 +32,7 @@ jobs:
       # Set host ip to env variable to be uside within container actions
       - name: set-host-ip
         run: echo "_HOST_IP=$(hostname -I | cut -d ' ' -f 1)" >> $GITHUB_ENV
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: run-build-scripts
         uses: ./.github/actions/build-environment
         with:
