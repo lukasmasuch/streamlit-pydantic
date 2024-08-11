@@ -2,10 +2,9 @@ from enum import Enum
 from typing import Dict, List, Set
 
 import streamlit as st
+import streamlit_pydantic as sp
 from pydantic import BaseModel, Field
 from pydantic.color import Color
-
-import streamlit_pydantic as sp
 
 
 class OtherData(BaseModel):
@@ -61,6 +60,6 @@ class ExampleModel(BaseModel):
     )
 
 
-data = sp.pydantic_input(key="my_input", model=ExampleModel)
+data = sp.pydantic_input(key="my_default_input", model=ExampleModel)
 if data:
     st.json(data)

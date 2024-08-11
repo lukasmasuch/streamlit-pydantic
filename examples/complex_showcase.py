@@ -1,12 +1,10 @@
 import datetime
 from enum import Enum
-from typing import Dict, List, Literal, Optional, Set
+from typing import Dict, List, Literal, Set
 
 import streamlit as st
-from pydantic import BaseModel, Field, SecretStr
-
 import streamlit_pydantic as sp
-from streamlit_pydantic.types import FileContent
+from pydantic import Base64UrlBytes, BaseModel, Field, SecretStr
 
 
 class SelectionValue(str, Enum):
@@ -36,11 +34,11 @@ class ShowcaseModel(BaseModel):
         ..., ge=0, multiple_of=10, description="Positive integer with step count of 10."
     )
     float_number: float = Field(0.001)
-    date: Optional[datetime.date] = Field(
+    date: datetime.date = Field(
         datetime.date.today(),
         description="Date property. Optional because of default value.",
     )
-    time: Optional[datetime.time] = Field(
+    time: datetime.time = Field(
         datetime.datetime.now().time(),
         description="Time property. Optional because of default value.",
     )
@@ -53,12 +51,12 @@ class ShowcaseModel(BaseModel):
         description="This is a ready only text.",
         readOnly=True,
     )
-    file_list: Optional[List[FileContent]] = Field(
-        None,
+    file_list: List[Base64UrlBytes] = Field(
+        [],
         description="A list of files. Optional property.",
     )
-    single_file: Optional[FileContent] = Field(
-        None,
+    single_file: Base64UrlBytes = Field(
+        b"",
         description="A single file. Optional property.",
     )
     single_selection: SelectionValue = Field(
@@ -93,9 +91,10 @@ class ShowcaseModel(BaseModel):
     )
 
 
-session_data = sp.pydantic_input(
-    key="my_input", model=ShowcaseModel, group_optional_fields="sidebar"
+data = sp.pydantic_input(
+    key="my_showcase_input", model=ShowcaseModel, group_optional_fields="sidebar"
 )
 
-with st.expander("Current Input State", expanded=False):
-    st.json(session_data)
+if data:
+    with st.expander("Current Input State", expanded=False):
+        st.json(data)

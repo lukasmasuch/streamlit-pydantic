@@ -42,7 +42,7 @@ Streamlit-pydantic makes it easy to auto-generate UI elements from [Pydantic](ht
 ## Highlights
 
 - 🪄&nbsp; Auto-generated UI elements from Pydantic models & Dataclasses.
-- 📇&nbsp; Out-of-the-box data validation. 
+- 📇&nbsp; Out-of-the-box data validation.
 - 📑&nbsp; Supports nested Pydantic models.
 - 📏&nbsp; Supports field limits and customizations.
 - 🎈&nbsp; Easy to integrate into any Streamlit app.
@@ -63,17 +63,18 @@ pip install streamlit-pydantic
 
     ```python
     import streamlit as st
-    from pydantic import BaseModel
     import streamlit_pydantic as sp
+    from pydantic import BaseModel
+
 
     class ExampleModel(BaseModel):
         some_text: str
         some_number: int
         some_boolean: bool
 
-    data = sp.pydantic_form(key="my_form", model=ExampleModel)
+    data = sp.pydantic_form(key="my_sample_form", model=ExampleModel)
     if data:
-        st.json(data.json())
+        st.json(data.model_dump())
     ```
 
 2. Run the streamlit server on the python script: `streamlit run my_script.py`
@@ -90,15 +91,14 @@ pip install streamlit-pydantic
 
 ---
 
-The following collection of examples demonstrate how Streamlit Pydantic can be applied in more advanced scenarios. You can find additional - even more advanced - examples in the [examples folder](./examples) or in the [playground](https://share.streamlit.io/lukasmasuch/streamlit-pydantic/main/playground/playground_app.py). 
+The following collection of examples demonstrate how Streamlit Pydantic can be applied in more advanced scenarios. You can find additional - even more advanced - examples in the [examples folder](./examples) or in the [playground](https://share.streamlit.io/lukasmasuch/streamlit-pydantic/main/playground/playground_app.py).
 
 ### Simple Form
 
 ```python
 import streamlit as st
-from pydantic import BaseModel
-
 import streamlit_pydantic as sp
+from pydantic import BaseModel
 
 
 class ExampleModel(BaseModel):
@@ -106,30 +106,27 @@ class ExampleModel(BaseModel):
     some_number: int
     some_boolean: bool
 
-data = sp.pydantic_form(key="my_form", model=ExampleModel)
+data = sp.pydantic_form(key="my_sample_form", model=ExampleModel)
 if data:
-    st.json(data.json())
+    st.json(data.model_dump())
 ```
 
 ### Date Validation
 
 ```python
 import streamlit as st
-from pydantic import BaseModel, Field, HttpUrl
-from pydantic.color import Color
-
 import streamlit_pydantic as sp
-
+from pydantic import BaseModel, Field, HttpUrl
+from pydantic_extra_types.color import Color
 
 class ExampleModel(BaseModel):
     url: HttpUrl
-    color: Color
+    color: Color = Field("blue", format="text")
     email: str = Field(..., max_length=100, regex=r"^\S+@\S+$")
-
 
 data = sp.pydantic_form(key="my_form", model=ExampleModel)
 if data:
-    st.json(data.json())
+    st.json(data.model_dump_json())
 ```
 
 ### Dataclasses Support
@@ -151,9 +148,9 @@ class ExampleModel:
     some_text: str = "default input"
 
 
-data = sp.pydantic_form(key="my_form", model=ExampleModel)
+data = sp.pydantic_form(key="my_dataclass_form", model=ExampleModel)
 if data:
-    st.json(json.dumps(data, default=pydantic_encoder))
+    st.json(dataclasses.asdict(data))
 ```
 
 ### Complex Nested Model
@@ -163,7 +160,7 @@ from enum import Enum
 from typing import Set
 
 import streamlit as st
-from pydantic import BaseModel, Field, ValidationError, parse_obj_as
+from pydantic import BaseModel, Field
 
 import streamlit_pydantic as sp
 
@@ -179,11 +176,13 @@ class SelectionValue(str, Enum):
 
 
 class ExampleModel(BaseModel):
-    long_text: str = Field(..., description="Unlimited text property")
+    long_text: str = Field(
+        ..., format="multi-line", description="Unlimited text property"
+    )
     integer_in_range: int = Field(
         20,
         ge=10,
-        lt=30,
+        le=30,
         multiple_of=2,
         description="Number property with a limited range.",
     )
@@ -193,6 +192,11 @@ class ExampleModel(BaseModel):
     multi_selection: Set[SelectionValue] = Field(
         ..., description="Allows multiple items from a set."
     )
+    read_only_text: str = Field(
+        "Lorem ipsum dolor sit amet",
+        description="This is a ready only text.",
+        readOnly=True,
+    )
     single_object: OtherData = Field(
         ...,
         description="Another object embedded into this model.",
@@ -201,7 +205,7 @@ class ExampleModel(BaseModel):
 
 data = sp.pydantic_form(key="my_form", model=ExampleModel)
 if data:
-    st.json(data.json())
+    st.json(data.model_dump_json())
 ```
 
 ### Render Input
@@ -218,7 +222,9 @@ class ExampleModel(BaseModel):
     some_boolean: bool = True  # Option
 
 
-input_data = sp.pydantic_input("model_input", ExampleModel, use_sidebar=True)
+input_data = sp.pydantic_input(
+    "model_input", model=ExampleModel, group_optional_fields="sidebar"
+)
 ```
 
 ### Render Output
@@ -257,8 +263,12 @@ class ExampleModel(BaseModel):
 
 
 with st.form(key="pydantic_form"):
-    sp.pydantic_input(key="my_input_model", model=ExampleModel)
+    data = sp.pydantic_input(key="my_custom_form_model", model=ExampleModel)
     submit_button = st.form_submit_button(label="Submit")
+    obj = ExampleModel(data)
+
+if data:
+    st.json(obj.model_dump())
 ```
 
 ## Support & Feedback

@@ -49,9 +49,9 @@ jobs:
         with:
           branch: "${{ env.BRANCH_PREFIX }}${{ env.VERSION }}"
       - if: ${{ ! (env.GITHUB_TOKEN != null && env.GITHUB_TOKEN != '')  }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@4
       - if: ${{ env.GITHUB_TOKEN != null && env.GITHUB_TOKEN != '' }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ env.BRANCH_PREFIX }}${{ env.VERSION }}
@@ -117,7 +117,7 @@ jobs:
         run: echo "The release drafter currently does not work with act, please create the release from the Github UI."
       - if: ${{ env.GITHUB_ACTOR != 'nektos/act' && env.GITHUB_TOKEN != null && env.GITHUB_TOKEN != '' }}
         name: checkout-fixed-release-drafter
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: ml-tooling/release-drafter
           path: ./.git/cloned-actions/release-drafter
