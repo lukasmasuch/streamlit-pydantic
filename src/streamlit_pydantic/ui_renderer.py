@@ -24,7 +24,8 @@ def _pydantic_encoder(obj: Any) -> Any:
     """Simplified version of pydantic v1's deprecated json encoder."""
     if isinstance(obj, BaseModel):
         return obj.model_dump(mode="json")
-    elif dataclasses.is_dataclass(obj):
+    elif dataclasses.is_dataclass(obj) and not isinstance(obj, type):
+        # Object is a dataclass instance
         return dataclasses.asdict(obj)
 
     raise TypeError(
