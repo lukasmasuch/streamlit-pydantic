@@ -16,4 +16,4 @@ class MySettings(sp.StreamlitSettings):
     my_cool_secrets: SubModel
 
 
-st.json(MySettings().dict())
+st.json(MySettings().model_dump())
