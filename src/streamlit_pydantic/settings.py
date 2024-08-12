@@ -50,7 +50,7 @@ class StreamlitSettings(BaseSettings):
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> Tuple[PydanticBaseSettingsSource, ...]:
-        """lazydocs: ignore"""
+        """lazydocs: ignore."""
         return (
             init_settings,
             env_settings,
