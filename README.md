@@ -297,16 +297,28 @@ This repo uses [Rye](https://rye.astral.sh/) for development. To get started, [i
 rye sync
 ```
 
-To run linting and type checks:
+Run the playground app:
+
+```bash
+rye run playground
+```
+
+Run linting and type checks:
 
 ```bash
 rye run checks
 ```
 
-And to format the code:
+Format the code:
 
 ```bash
 rye run format
+```
+
+Run tests:
+
+```bash 
+rye test
 ```
 
 ---
