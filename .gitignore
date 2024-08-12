@@ -7,33 +7,18 @@ research/
 # Sublime
 *.sublime-workspace
 
-# Eclipse
-.settings
-
 # VS Code
 .project
 .classpath
 # Shared VS Code Settings
 .vscode/*
-!.vscode/README.md
-!.vscode/recommended-settings.json
-!.vscode/recommended-tasks.json
-!.vscode/recommended-launch.json
-!.vscode/extensions.json
 # Ignore all local history of files
 **/.history
-
-# Java
-*.class
-target/
-
-# C
-*.so
 
 # Python
 *.pyc
 *.egg-info
-__pycache__
+__pycache__/
 .ipynb_checkpoints
 .Python
 dist/
@@ -45,10 +30,7 @@ reqlib-metadata
 .venv
 venv/
 build/
-
-# Byte-compiled / optimized / DLL files
-*.pyc
-__pycache__/
+wheels/
 *.py[cod]
 *$py.class
 
@@ -64,11 +46,6 @@ coverage.xml
 *,cover
 .hypothesis/
 .pytest_cache/
-
-# NPM / Node / JavaScript
-.npm
-node_modules/
-jspm_packages/
 
 # Runtime data
 pids
