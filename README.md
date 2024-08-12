@@ -309,6 +309,11 @@ Run linting and type checks:
 rye run checks
 ```
 
+> [!TIP]
+> The linting and formatting is using [ruff](https://github.com/astral-sh/ruff) and
+> type-checking is done with [mypy](https://github.com/python/mypy). You can use
+> the ruff and mypy extensions of your IDE to run these checks during development.
+
 Format the code:
 
 ```bash
