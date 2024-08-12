@@ -26,8 +26,6 @@
 
 Streamlit-pydantic makes it easy to auto-generate UI elements from [Pydantic](https://github.com/samuelcolvin/pydantic/) models or [dataclasses](https://docs.python.org/3/library/dataclasses.html). Just define your data model and turn it into a full-fledged UI form. It supports data validation, nested models, and field limitations. Streamlit-pydantic can be easily integrated into any Streamlit app.
 
-<sup>Beta Version: Only suggested for experimental usage.</sup>
-
 
 <img style="width: 100%" src="https://raw.githubusercontent.com/lukasmasuch/streamlit-pydantic/main/docs/images/banner.png"/>
 
@@ -51,7 +49,7 @@ Streamlit-pydantic makes it easy to auto-generate UI elements from [Pydantic](ht
 
 ### Installation
 
-> _Requirements: Python 3.6+._
+> _Requirements: Python 3.8+._
 
 ```bash
 pip install streamlit-pydantic
@@ -91,7 +89,7 @@ pip install streamlit-pydantic
 
 ---
 
-The following collection of examples demonstrate how Streamlit Pydantic can be applied in more advanced scenarios. You can find additional - even more advanced - examples in the [examples folder](./examples) or in the [playground](https://share.streamlit.io/lukasmasuch/streamlit-pydantic/main/playground/playground_app.py).
+The following collection of examples demonstrates how Streamlit Pydantic can be applied in more advanced scenarios. You can find additional - even more advanced - examples in the [examples folder](./examples) or on the [playground](https://share.streamlit.io/lukasmasuch/streamlit-pydantic/main/playground/playground_app.py).
 
 ### Simple Form
 
@@ -293,15 +291,24 @@ The API documentation can be found [here](./docs). To generate UI elements, you 
 
 ## Development
 
-To build the project and run the style/linter checks, execute:
+This repo uses [Rye](https://rye.astral.sh/) for development. To get started, [install Rye](https://rye.astral.sh/) and sync the project:
 
 ```bash
-make install
-make check
+rye sync
 ```
 
-Run `make help` to see additional commands for development. 
+To run linting and type checks, run:
+
+```bash
+rye run checks
+```
+
+And to format the code, run:
+
+```bash
+rye run format
+```
 
 ---
 
-Licensed **MIT**. Created and maintained with ❤️&nbsp; by developers from Berlin.
+Licensed **MIT**.
