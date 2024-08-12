@@ -1,29 +1,137 @@
-# Support for PEP 517
-# https://setuptools.readthedocs.io/en/latest/setuptools.html#setup-cfg-only-projects
 [build-system]
-build-backend = "setuptools.build_meta"
-requires = [
-  "setuptools >= 40.9.0",
-  "wheel",
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "streamlit-pydantic"
+version = "0.1.0"
+# dynamic = ["version"]
+description = "Auto-generate Streamlit UI from Pydantic Models & Dataclasses."
+readme = "README.md"
+authors = [{ name = "Lukas Masuch", email = "lukas.masuch@gmail.com" }]
+requires-python = ">= 3.8"
+dependencies = [
+    "streamlit>=1.30.0",
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
+    "pydantic-extra-types>=2.6.0",
+    "importlib-resources",
+]
+license = "MIT"
+classifiers = [
+    "Typing :: Typed",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Operating System :: POSIX",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Utilities",
+    "Topic :: Software Development :: User Interfaces",
 ]
 
-[tool.black]
-exclude = '''
-(
-    \.egg
-  | \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.pytest_cache
-  | \.tox
-  | \.nox
-  | \.venv
-  | _build
-  | build
-  | dist
-  | setup.py
-)
-'''
+[project.urls]
+Homepage = "https://github.com/lukasmasuch/streamlit-pydantic"
+Documentation = "https://github.com/lukasmasuch/streamlit-pydantic#documentation"
+Repository = "https://github.com/lukasmasuch/streamlit-pydantic"
+Issues = "https://github.com/lukasmasuch/streamlit-pydantic/issues"
+Changelog = "https://github.com/lukasmasuch/streamlit-pydantic/releases"
+
+[tool.rye]
+managed = true
+dev-dependencies = ["pytest", "mypy", "ruff", "types-dataclasses", "lazydocs"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/streamlit_pydantic"]
+
+[tool.rye.scripts]
+all = { chain = ["format", "check", "test:pytest"] }
+format = { chain = [
+  "format:ruff",
+  "isort:ruff",
+]}
+checks = { chain = [
+  "formatcheck:ruff",
+  "lint:ruff",
+  "check:importable",
+  "typecheck:mypy"
+]}
+"format:ruff" = "rye fmt"
+"isort:ruff" = "rye lint --fix -- --select I"
+"formatcheck:ruff" = "ruff format --check"
+"lint:ruff" = "ruff lint"
+"test:pytest" = "rye test"
+"check:importable" = "python -c 'import streamlit_pydantic'"
+"typecheck:mypy" = "mypy src/streamlit_pydantic"
+playground = "streamlit run ./playground/playground_app.py"
+docs = "lazydocs --overview-file=README.md --src-base-url=https://github.com/lukasmasuch/streamlit-pydantic/blob/main streamlit_pydantic"
+
+[tool.ruff]
+target-version = 'py38'
 line-length = 88
-target-version = ['py36', 'py37', 'py38']
+extend-exclude = ["examples", "playground"]
+
+[tool.ruff.lint]
+# https://docs.astral.sh/ruff/rules/
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "I",  # import sorting
+    "D",  # pydocstyle
+    # "PL", # pylint
+]
+ignore = [
+    "D100",    # Missing docstring in public module
+    "D101",    # Missing docstring in public class
+    "D102",    # Missing docstring in public method
+    "D103",    # Missing docstring in public function
+    "D104",    # Missing docstring in public package
+    "D105",    # Missing docstring in magic method
+    "D107",    # Missing docstring in __init__
+    "D202",    # No blank lines allowed after function docstring
+    "E203",    # space before : (needed for how black formats slicing)
+    "E501",    # line too long
+    "E731",    # do not assign a lambda expression, use a def
+    "E721",    # do not compare types, use 'isinstance()'
+    "E402",    # module level import not at top of file
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+# so it knows to group first-party stuff last
+known-first-party = ["streamlit-pydantic", "tests"]
+
+[tool.mypy]
+# https://mypy.readthedocs.io/en/stable/config_file.html
+python_version = "3.8"
+ignore_missing_imports = true
+disallow_untyped_defs = true
+follow_imports = "skip"
+
+[tool.pytest.ini_options]
+addopts = "-s"

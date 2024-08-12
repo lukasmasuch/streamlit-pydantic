@@ -1,0 +1,18 @@
+name: release
+on:
+  release:
+    types: [published]
+jobs:
+  publish:
+    environment: release # needed for PyPI OIDC
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rye
+        uses: eifinger/setup-rye@v4
+      - name: Build package
+        run: rye build
+      - name: Publish on PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
