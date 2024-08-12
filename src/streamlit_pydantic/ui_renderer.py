@@ -134,12 +134,12 @@ class InputUI:
         if _has_input_ui_renderer(self._input_class):
             # The input model has a rendering function
             # The rendering also returns the current state of input data
-            self._session_state[
-                self._session_input_key
-            ] = self._input_class.render_input_ui(  # type: ignore
-                self._streamlit_container,
-                self._session_state[self._session_input_key],
-            ).model_dump()
+            self._session_state[self._session_input_key] = (
+                self._input_class.render_input_ui(  # type: ignore
+                    self._streamlit_container,
+                    self._session_state[self._session_input_key],
+                ).model_dump()
+            )
             return self._session_state[self._session_input_key]
 
         properties_in_expander = []

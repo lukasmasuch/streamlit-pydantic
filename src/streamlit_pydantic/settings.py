@@ -16,7 +16,9 @@ class StreamlitSettings(BaseSettings):
         extra = "ignore"
 
         @classmethod
-        def customise_sources(cls, init_settings, env_settings, file_secret_settings) -> Any:  # type: ignore
+        def customise_sources(
+            cls, init_settings, env_settings, file_secret_settings
+        ) -> Any:  # type: ignore
             return (
                 init_settings,
                 env_settings,
