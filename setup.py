@@ -70,7 +70,6 @@ setup(
             "pydocstyle",
             "isort",
             "lazydocs",
-            "universal-build",
             "rope",
             "colorama",
         ],
