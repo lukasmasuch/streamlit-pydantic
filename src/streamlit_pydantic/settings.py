@@ -8,7 +8,7 @@ from pydantic_settings import (
 )
 
 
-class StreamlitSettingsSource(PydanticBaseSettingsSource):
+class _StreamlitSettingsSource(PydanticBaseSettingsSource):
     def get_field_value(
         self, field: FieldInfo, field_name: str
     ) -> Tuple[Any, str, bool]:
@@ -50,10 +50,11 @@ class StreamlitSettings(BaseSettings):
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> Tuple[PydanticBaseSettingsSource, ...]:
+        """lazydocs: ignore"""
         return (
             init_settings,
             env_settings,
             dotenv_settings,
             file_secret_settings,
-            StreamlitSettingsSource(settings_cls),
+            _StreamlitSettingsSource(settings_cls),
         )
