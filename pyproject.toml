@@ -76,13 +76,14 @@ format = { chain = [
 checks = { chain = [
   "formatcheck:ruff",
   "lint:ruff",
+  "typecheck:mypy",
   "check:importable",
-  "typecheck:mypy"
+  # TODO: add doccs check here
 ]}
 "format:ruff" = "rye fmt"
 "isort:ruff" = "rye lint --fix -- --select I"
 "formatcheck:ruff" = "ruff format --check"
-"lint:ruff" = "ruff lint"
+"lint:ruff" = "rye lint"
 "test:pytest" = "rye test"
 "check:importable" = "python -c 'import streamlit_pydantic'"
 "typecheck:mypy" = "mypy src/streamlit_pydantic"
