@@ -297,13 +297,13 @@ This repo uses [Rye](https://rye.astral.sh/) for development. To get started, [i
 rye sync
 ```
 
-To run linting and type checks, run:
+To run linting and type checks:
 
 ```bash
 rye run checks
 ```
 
-And to format the code, run:
+And to format the code:
 
 ```bash
 rye run format
