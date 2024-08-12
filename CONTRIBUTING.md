@@ -37,86 +37,6 @@ You are welcome to contribute code in order to fix a bug, to implement a new fea
 - Commits should be as small as possible while ensuring that each commit is correct independently (i.e., each commit should compile and pass tests). Also, make sure to follow the commit message guidelines.
 - Test your changes as thoroughly as possible before you commit them. Preferably, automate your test by unit/integration tests.
 
-### Development Instructions
-
-To simplify the process of building this project from scratch, we provide build-scripts - based on [universal-build](https://github.com/ml-tooling/universal-build) - that run all necessary steps (build, test, and release) within a containerized environment by using [Github Actions](https://github.com/features/actions) and [Act](https://github.com/nektos/act) to run all actions locally.
-
-> _Please refer to the [documentation of universal-build](https://github.com/ml-tooling/universal-build#automated-build-pipeline-ci) for instructions on how to execute the build-scripts directly on your machine instead of using the containerized approach documented below. This local execution would not require Docker._
-
-#### Requirements
-
-- [Act](https://github.com/nektos/act#installation), [Docker](https://docs.docker.com/get-docker/)
-
-#### Build components
-
-Execute this command in the project root folder to compile, assemble, and package all project components:
-
-```bash
-act -b -s BUILD_ARGS="--make" -j build
-```
-
-You can also run the build only for a specific (sub-)component by providing the path to the component folder, as shown below:
-
-```bash
-act -b -s BUILD_ARGS="--make" -s WORKING_DIRECTORY="./docs" -j build
-```
-
-#### Run linting & style checks
-
-To run all relevant linting and code style checks for all components, execute:
-
-```bash
-act -b -s BUILD_ARGS="--check" -j build
-```
-
-#### Run integration & unit tests
-
-Once all the project artifacts are build, you can execute this command in the project root folder to run the integration & unit tests for all components:
-
-```bash
-act -b -s BUILD_ARGS="--test" -j build
-```
-
-It is also possible to combine multiple steps into one command:
-
-```bash
-act -b -s BUILD_ARGS="--check --make --test" -j build
-```
-
-The `--check --make --test` steps are configured as default. If you call the job without `BUILD_ARGS` the build and test steps will be executed:
-
-```bash
-act -b -j build
-```
-
-#### Release a new version
-
-To release a new version and publish all relevant artifacts to the respective registries (e.g. Docker image to DockerHub) you can either trigger our release pipeline locally via Act or from the Github UI. For a release, you have to provide a valid version based on [Semantic Versioning](https://semver.org/) standard.
-
-##### Via Act (locally)
-
-To build all components and publish all artifacts from your local machine, execute:
-
-```bash
-act -b -s VERSION="<MAJOR.MINOR.PATCH>" -j release
-```
-
-In case you also want to automatically create a valid Github release, you also need to provide a valid `GITHUB_TOKEN` as a secret (`-s GITHUB_TOKEN=<token>`). Please refer to the next section for information on how to finish and publish the release.
-
-##### Via Github Actions
-
-To trigger our release pipeline from Github UI, you can either close a milestone that has a valid version name (`vMAJOR.MINOR.PATCH`) or execute the release pipeline manually via the `workflow_dispatch` UI in the Action Tab (`Actions -> release-pipeline -> Run Workflow`). The release pipeline will automatically create a pull request for the new version as well as a draft release on Github.
-
-After successful execution of the release pipeline, the following steps are required to finish the release:
-
-1. Merge the release PR into `main`. Preferably via merge commit to keep the version tag in the `main` branch. We suggest to use the following message for the merge commit: `Finalize release for version <VERSION> (#<PR>)`.
-2. Adapt the changelog of the draft release on Github (in the release section). Mention all other changes that are not covered by pull requests.
-3. Publish the release.
-
-##### Resolve an unsuccessful release
-
-In case the release pipeline fails at any step, we suggest to fix the problem based on the release pipeline logs and create a new release with an incremented `patch` version. To clean up the unsuccessful release, make sure to delete the following artifacts (if they exist): the release branch, the release PR, the version tag, the draft release, and any release artifact that was already published (e.g. on DockerHub, NPM or PyPi).
-
 ### Commit messages guidelines
 
 Commit messages should be as standardized as possible within the repository. A few best practices:
@@ -150,111 +70,43 @@ Commit messages should be as standardized as possible within the repository. A f
 
 ## Code conventions
 
-### Python conventions
-
 - Code Style: [PEP8](https://www.python.org/dev/peps/pep-0008/)
-- Documentation Style: [Google Style](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html) (checked by [pydocstyle](https://github.com/PyCQA/pydocstyle))
+- Documentation Style: [Google Style](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html)
 - Naming Conventions: [naming-convention-guides](https://github.com/naming-convention/naming-convention-guides/tree/master/python#python-naming-convention)
-- Build Tool: [setuptool](https://github.com/pypa/setuptools)
-- Code Formatter: [black](https://github.com/psf/black)
-- Import Sorting: [isort](https://github.com/PyCQA/isort)
-- Linting: [flake8](https://github.com/PyCQA/flake8)
+- Code Formatter: [ruff](https://docs.astral.sh/ruff/)
+- Import Sorting: [ruff](https://docs.astral.sh/ruff/)
+- Linting: [ruff](https://docs.astral.sh/ruff/)
 - Type Checking: [mypy](https://github.com/python/mypy)
-- Testing: [pytest](http://doc.pytest.org/) + [pipenv](https://github.com/pypa/pipenv)
-- Logging: [logging](https://docs.python.org/3/library/logging.html)
-- Package Manager: [pip](https://github.com/pypa/pip)
+- Testing: [pytest](http://doc.pytest.org/)
+- Package Manager: [rye](https://rye.astral.sh/)
 - Use type hints wherever possible: [Cheatsheet](https://mypy.readthedocs.io/en/latest/cheat_sheet_py3.html)
-- Minimum compatibility: Python 3.6
+- Minimum compatibility: Python 3.8
 
-#### Code style & naming
+### Code formatting
 
-- **Code style** should loosely follow [pep8](https://www.python.org/dev/peps/pep-0008/).
-- **Documentation style** should follow the [Google style](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html).
-- **Naming** should follow the recommendations [here](https://github.com/naming-convention/naming-convention-guides/tree/master/python#python-naming-convention).
-
-#### Code formatting
-
-We use [black](https://github.com/ambv/black) for code formatting and [isort](https://github.com/PyCQA/isort) for import sorting. The following commands run `black` and `isort` on all Python files of the component (when executed in the component root):
+We use [ruff](https://docs.astral.sh/ruff/) for code formatting and import sorting. The following commands runs the formatting on all Python files:
 
 ```bash
-isort --profile black src
-black src
+rye run format
 ```
 
-If you want to only check if the formatting and sorting is applied correctly to all files, execute:
+### Code linting
+
+We use [ruff](https://docs.astral.sh/ruff/) for linting and [mypy](https://github.com/python/mypy) for type checking. You can find our ruff configuration inside the `pyproject.toml`. The following commands runs all linting and type checks on all python files:
 
 ```bash
-# formatting check:
-black --check src
-# import sorting check:
-isort --profile black --check-only src
+rye run checks
 ```
 
-You can also configure `black` and `isort` inside your code editor. For example, if you're using [Visual Studio Code](https://code.visualstudio.com/) with the [Python extension](https://marketplace.visualstudio.com/items?itemName=ms-python.python), you can add the following to your `settings.json` for formatting and auto-format your files on save:
-
-```json
-{
-    "python.formatting.provider": "black",
-    "python.sortImports.args": [
-        "--multi-line=3",
-        "--trailing-comma",
-        "--force-grid-wrap=0",
-        "--use-parentheses",
-        "--line-width=88"
-    ],
-    "[python]": {
-        "editor.defaultFormatter": "ms-python.python",
-        "editor.formatOnPaste": false,
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-            "source.organizeImports": true
-        }
-    }
-}
-```
-
-#### Code linting
-
-We use [flake8](https://github.com/PyCQA/flake8) for linting, [mypy](https://github.com/python/mypy) for type checking, and [pydocstyle](https://github.com/PyCQA/pydocstyle) for docstring style checks. You can find our flake8 configuration inside the `setup.cfg` or [here](.github/linters/.flake8). The following commands run `flake8`, `mypy` and `pydocstyle` on all python files of the compontent (when executed in the compontent root):
-
-```bash
-# type checks
-mypy src
-# linting
-flake8 src
-# docstring checks
-pydocstyle src
-```
-
-You can also configure `flake8`, `mypy`, and `pydocstyle` inside your code editor. For example, if you're using [Visual Studio Code](https://code.visualstudio.com/) with the [Python extension](https://marketplace.visualstudio.com/items?itemName=ms-python.python), you can add the following to your `settings.json` for linting and type checking:
-
-```json
-{
-    "python.linting.enabled": true,
-    "python.linting.lintOnSave": true,
-    "python.linting.pylintEnabled": false,
-    "python.linting.mypyEnabled": true,
-    "python.linting.pydocstyleEnabled": true,
-    "python.linting.pydocstyleArgs": ["--convention=google"],
-    "python.linting.flake8Enabled": true,
-    "python.linting.flake8Args": [
-        "--ignore=E203,E501,W503"
-    ]
-}
-```
-
-#### Adding & running tests
+### Adding & running tests
 
 We use the [pytest](http://doc.pytest.org/) framework for testing. For more info on this, see the [pytest documentation](http://docs.pytest.org/en/latest/contents.html). Tests for modules and classes live in their own directories of the same name inside the `tests` folder. To be discovered, all test files and test functions need to be prefixed with `test_`. To run the test suite, execute:
 
 ```bash
-# Run full test suite:
-pytest
-# Exclude all slow tests
-pytest -m "not slow"
+rye test
 ```
 
-When adding tests, make sure to use descriptive names, keep the code short and concise and only test for one behavior at a time. Try to avoid unnecessary imports and use `parametrize` test cases wherever possible. Parametrizing tests allows to test multiple inputs to a function and verify that they return the expected output. Use [fixtures](https://docs.pytest.org/en/stable/fixture.html) to share test setups with - optional - setup and tear-down routines. Fixtures can also be parameterized. Extensive tests that take a long time should be marked with `@pytest.mark.slow`.
+When adding tests, make sure to use descriptive names, keep the code short and concise and only test for one behavior at a time. Try to avoid unnecessary imports and use `parametrize` test cases wherever possible. Parametrizing tests allows to test multiple inputs to a function and verify that they return the expected output. Use [fixtures](https://docs.pytest.org/en/stable/fixture.html) to share test setups with - optional - setup and tear-down routines. Fixtures can also be parameterized.
 
 ## Code of Conduct
 
