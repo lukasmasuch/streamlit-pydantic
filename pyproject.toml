@@ -51,6 +51,7 @@ classifiers = [
     "Topic :: Software Development :: User Interfaces",
     "Topic :: Utilities"
 ]
+keywords = ["streamlit", "pydantic"]
 
 [project.urls]
 Homepage = "https://github.com/lukasmasuch/streamlit-pydantic"
@@ -105,6 +106,10 @@ select = [
     "I",  # import sorting
     "D",  # pydocstyle
     # "PL", # pylint
+    # "F",  # pyflakes
+    # "B",  # flake8-bugbear
+    # "C4",  # flake8-comprehensions
+    # "UP",  # pyupgrade
 ]
 ignore = [
     "D100",    # Missing docstring in public module
