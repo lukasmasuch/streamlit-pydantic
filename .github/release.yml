@@ -11,4 +11,4 @@ changelog:
         - change:feature
     - title: 🐛 Bug Fixes
       labels:
-        - change:bugfix
+        - change:fix

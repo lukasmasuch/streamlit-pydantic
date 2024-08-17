@@ -28,4 +28,4 @@ jobs:
         with:
           mode: exactly
           count: 1
-          labels: "change:feature,change:bugfix,change:internal"
+          labels: "change:feature,change:fix,change:internal"
