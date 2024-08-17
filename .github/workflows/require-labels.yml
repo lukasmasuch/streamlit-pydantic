@@ -1,0 +1,31 @@
+name: Pull Request Labels
+
+on:
+  pull_request:
+    types: [opened, labeled, unlabeled, synchronize]
+
+jobs:
+  do-not-merge-guardrail:
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: read
+
+    steps:
+      - uses: mheap/github-action-required-labels@5847eef68201219cf0a4643ea7be61e77837bbce
+        with:
+          mode: exactly
+          count: 0
+          labels: "do-not-merge"
+  change-description:
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: read
+
+    steps:
+      - uses: mheap/github-action-required-labels@5847eef68201219cf0a4643ea7be61e77837bbce
+        with:
+          mode: exactly
+          count: 1
+          labels: "change:feature,change:bugfix,change:internal"
