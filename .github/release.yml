@@ -1,0 +1,17 @@
+changelog:
+  exclude:
+    labels:
+      - impact:internal
+  categories:
+    - title: 🚨 Breaking Changes
+      labels:
+        - change:breaking
+    - title: 🎉 New Features
+      labels:
+        - change:feature
+    - title: 🐛 Bug Fixes
+      labels:
+        - change:bugfix
+    - title: Other Changes
+      labels:
+        - impact:users
