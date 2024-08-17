@@ -4,7 +4,9 @@ on:
     types: [published]
 jobs:
   publish:
-    environment: release # needed for PyPI OIDC
+    environment:
+      name: release # needed for PyPI OIDC
+      url: https://pypi.org/p/streamlit-pydantic
     runs-on: ubuntu-latest
     permissions:
       id-token: write

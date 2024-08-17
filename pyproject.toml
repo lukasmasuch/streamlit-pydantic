@@ -1,11 +1,10 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
 name = "streamlit-pydantic"
-version = "0.1.0"
-# dynamic = ["version"]
+dynamic = ["version"]
 description = "Auto-generate Streamlit UI from Pydantic Models & Dataclasses."
 readme = "README.md"
 authors = [{ name = "Lukas Masuch", email = "lukas.masuch@gmail.com" }]
@@ -66,6 +65,9 @@ dev-dependencies = ["pytest", "mypy", "ruff", "types-dataclasses", "lazydocs"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+[tool.hatch.version]
+source = "vcs"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/streamlit_pydantic"]
