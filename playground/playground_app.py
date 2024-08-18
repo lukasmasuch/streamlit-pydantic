@@ -10,7 +10,6 @@ st.title("Streamlit Pydantic - Playground")
 
 BADGES = """
 <a href="https://gitHub.com/lukasmasuch/streamlit-pydantic" title="Star Repo" target="_blank"><img src="https://img.shields.io/github/stars/lukasmasuch/streamlit-pydantic.svg?logo=github&style=social"></a>
-<a href="https://twitter.com/lukasmasuch" title="Follow on Twitter" target="_blank"><img src="https://img.shields.io/twitter/follow/lukasmasuch.svg?style=social&label=Follow"></a>
 """
 st.markdown(BADGES, unsafe_allow_html=True)
 
