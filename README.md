@@ -51,8 +51,6 @@ Streamlit-pydantic makes it easy to auto-generate UI elements from [Pydantic](ht
 
 ### Installation
 
-> _Requirements: Python 3.8+._
-
 ```bash
 pip install streamlit-pydantic
 ```
