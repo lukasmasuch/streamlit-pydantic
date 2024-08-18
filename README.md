@@ -290,7 +290,7 @@ The API documentation can be found [here](./docs). To generate UI elements, you 
 
 ## Development
 
-<p align="center">
+<p>
   <a href="https://github.com/lukasmasuch/streamlit-pydantic/actions/workflows/ci.yml"><img src="https://github.com/lukasmasuch/streamlit-pydantic/actions/workflows/ci.yml/badge.svg" alt="Linting & testing" style="max-width:100%;"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff" style="max-width:100%;"></a>
   <a href="https://rye.astral.sh"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/rye/main/artwork/badge.json" alt="Rye" style="max-width:100%;"></a>
