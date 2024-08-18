@@ -14,6 +14,7 @@
     <a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/LICENSE" title="Project License"><img src="https://img.shields.io/badge/License-MIT-green.svg"></a>
     <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff" style="max-width:100%;"></a>
     <a href="https://rye.astral.sh"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/rye/main/artwork/badge.json" alt="Rye" style="max-width:100%;"></a>
+    <a href="https://st-pydantic.streamlit.app"><img src="https://static.streamlit.io/badges/streamlit_badge_black_white.svg"></a>
     <a href="https://twitter.com/lukasmasuch" title="Follow on Twitter"><img src="https://img.shields.io/twitter/follow/lukasmasuch.svg?style=social&label=Follow"></a>
 </p>
 
@@ -75,7 +76,7 @@ pip install streamlit-pydantic
         st.json(data.model_dump())
     ```
 
-2. Run the streamlit server on the python script: `streamlit run my_script.py`
+2. Run the Streamlit server on the Python script: `streamlit run my_script.py`
 
 3. You can find additional examples in the [examples](#examples) section below.
 
