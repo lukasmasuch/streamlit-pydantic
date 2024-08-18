@@ -1,14 +1,14 @@
 changelog:
-  exclude:
-    labels:
-      - change:internal
   categories:
-    - title: 🚨 Breaking Changes
+    - title: 💥 Breaking Changes
       labels:
         - change:breaking
-    - title: 🎁 Features & Improvements
+    - title: ✨ Features & Enhancements
       labels:
         - change:feature
     - title: 🐛 Bug Fixes
       labels:
         - change:fix
+    - title: Others
+      labels:
+        - change:internal

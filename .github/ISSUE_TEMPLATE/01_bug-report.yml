@@ -1,4 +1,4 @@
-name: 🚨 Bug report
+name: 🐛 Bug report
 description: Submit a bug report to help us improve streamlit-pydantic.
 labels: ["type:bug", "status:needs-triage"]
 body:
