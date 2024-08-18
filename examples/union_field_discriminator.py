@@ -1,8 +1,9 @@
 from typing import Literal, Optional, Union
 
 import streamlit as st
-import streamlit_pydantic as sp
 from pydantic import BaseModel, Field
+
+import streamlit_pydantic as sp
 
 
 class PostalAddress(BaseModel):

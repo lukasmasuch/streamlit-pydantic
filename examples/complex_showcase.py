@@ -3,8 +3,9 @@ from enum import Enum
 from typing import Dict, List, Literal, Set
 
 import streamlit as st
-import streamlit_pydantic as sp
 from pydantic import Base64UrlBytes, BaseModel, Field, SecretStr
+
+import streamlit_pydantic as sp
 
 
 class SelectionValue(str, Enum):

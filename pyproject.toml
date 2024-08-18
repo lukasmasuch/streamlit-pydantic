@@ -98,7 +98,6 @@ docs = "lazydocs --overview-file=README.md --src-base-url=https://github.com/luk
 [tool.ruff]
 target-version = 'py38'
 line-length = 88
-extend-exclude = ["examples", "playground"]
 
 [tool.ruff.lint]
 # https://docs.astral.sh/ruff/rules/

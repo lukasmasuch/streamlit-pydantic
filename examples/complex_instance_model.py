@@ -1,11 +1,12 @@
 import datetime
 from enum import Enum
-from typing import Annotated, Dict, List, Set
+from typing import Dict, List, Set
 
 import streamlit as st
 from annotated_types import Gt
 from pydantic import BaseModel, Field
 from pydantic_extra_types.color import Color
+from typing_extensions import Annotated
 
 import streamlit_pydantic as sp
 

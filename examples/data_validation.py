@@ -1,12 +1,15 @@
 import streamlit as st
-import streamlit_pydantic as sp
-from pydantic import BaseModel, Field, HttpUrl, EmailStr
+from pydantic import BaseModel, EmailStr, Field, HttpUrl
 from pydantic_extra_types.color import Color
+
+import streamlit_pydantic as sp
+
 
 class ExampleModel(BaseModel):
     url: HttpUrl
     color: Color = Field("blue", format="text")
     email: EmailStr
+
 
 data = sp.pydantic_form(key="my_form", model=ExampleModel)
 if data:
