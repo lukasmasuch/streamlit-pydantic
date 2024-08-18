@@ -133,7 +133,7 @@ convention = "google"
 
 [tool.ruff.lint.isort]
 # so it knows to group first-party stuff last
-known-first-party = ["streamlit-pydantic", "tests"]
+known-first-party = ["streamlit_pydantic", "tests"]
 
 [tool.mypy]
 # https://mypy.readthedocs.io/en/stable/config_file.html
