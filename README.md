@@ -34,7 +34,7 @@ Streamlit-pydantic makes it easy to auto-generate UI elements from [Pydantic](ht
 ---
 
 <p align="center">
-     Try out and explore various examples in our playground <a href="https://share.streamlit.io/lukasmasuch/streamlit-pydantic/main/playground/playground_app.py">here</a>.
+     Try out and explore various examples in our playground <a href="https://st-pydantic.streamlit.app/">here</a>.
 </p>
 
 ---
@@ -84,12 +84,12 @@ pip install streamlit-pydantic
 ---
 
 <p align="center">
-     👉&nbsp; Try out and explore these examples in our playground <a href="https://share.streamlit.io/lukasmasuch/streamlit-pydantic/main/playground/playground_app.py">here</a>
+     👉&nbsp; Try out and explore these examples in our playground <a href="https://st-pydantic.streamlit.app/">here</a>
 </p>
 
 ---
 
-The following collection of examples demonstrates how Streamlit Pydantic can be applied in more advanced scenarios. You can find additional - even more advanced - examples in the [examples folder](./examples) or on the [playground](https://share.streamlit.io/lukasmasuch/streamlit-pydantic/main/playground/playground_app.py).
+The following collection of examples demonstrates how Streamlit Pydantic can be applied in more advanced scenarios. You can find additional - even more advanced - examples in the [examples folder](./examples) or on the [playground](https://st-pydantic.streamlit.app/).
 
 ### Simple Form
 
