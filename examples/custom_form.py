@@ -13,7 +13,7 @@ class ExampleModel(BaseModel):
 with st.form(key="pydantic_form"):
     data = sp.pydantic_input(key="my_custom_form_model", model=ExampleModel)
     submit_button = st.form_submit_button(label="Submit")
-    obj = ExampleModel(data)
+    obj = ExampleModel.model_validate(data)
 
-# if data:
-#     st.json(obj.model_dump())
+if data:
+    st.json(obj.model_dump())
