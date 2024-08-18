@@ -293,7 +293,9 @@ The API documentation can be found [here](./docs). To generate UI elements, you 
 <p align="center">
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff" style="max-width:100%;"></a>
   <a href="https://rye.astral.sh"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/rye/main/artwork/badge.json" alt="Rye" style="max-width:100%;"></a>
+  <a href="https://github.com/python/mypy"><img src="https://img.shields.io/badge/mypy-checked-blue" alt="mypy" style="max-width:100%;"></a>
 </p>
+
 
 This repo uses [Rye](https://rye.astral.sh/) for development. To get started, [install Rye](https://rye.astral.sh/) and sync the project:
 
