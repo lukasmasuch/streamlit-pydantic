@@ -275,7 +275,7 @@ if data:
 | ------------------------ | ------------------------------------------------------ |
 | 🐛&nbsp; **Bug Reports**       | <a href="https://github.com/lukasmasuch/streamlit-pydantic/issues/new?assignees=&labels=type%3Abug%2Cstatus%3Aneeds-triage&projects=&template=01_bug-report.yml" title="Open Bug Report"><img src="https://img.shields.io/github/issues/lukasmasuch/streamlit-pydantic/type%3Abug.svg?label=bugs"></a>                                 |
 | ✨&nbsp; **Feature Requests**  | <a href="https://github.com/lukasmasuch/streamlit-pydantic/issues/new?assignees=&labels=type%3Aenhancement%2Cstatus%3Aneeds-triage&projects=&template=02_feature-request.yml" title="Open Feature Request"><img src="https://img.shields.io/github/issues/lukasmasuch/streamlit-pydantic/feature.svg?label=feature%20requests"></a>                                 |
-| 👩‍💻&nbsp; **Usage Questions**   |  <a href="https://github.com/lukasmasuch/streamlit-pydantic/issues?q=is%3Aopen+is%3Aissue+label%3Asupport+sort%3Areactions-%2B1-desc" title="Open Support Request"> <img src="https://img.shields.io/github/issues/lukasmasuch/streamlit-pydantic/support.svg?label=support%20request"></a> |
+| 👩‍💻&nbsp; **Usage Questions**   |  <a href="https://github.com/lukasmasuch/streamlit-pydantic/discussions"> <img src="https://img.shields.io/github/discussions/lukasmasuch/streamlit-pydantic"></a> |
 | 📢&nbsp; **Announcements**  | <a href="https://twitter.com/lukasmasuch" title="Follow me on Twitter"><img src="https://img.shields.io/twitter/follow/lukasmasuch.svg?style=social&label=Follow"> |
 
 ## Documentation
