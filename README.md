@@ -27,7 +27,6 @@
 
 Streamlit-pydantic makes it easy to auto-generate UI elements from [Pydantic](https://github.com/samuelcolvin/pydantic/) models or [dataclasses](https://docs.python.org/3/library/dataclasses.html). Just define your data model and turn it into a full-fledged UI form. It supports data validation, nested models, and field limitations. Streamlit-pydantic can be easily integrated into any Streamlit app.
 
-
 <img style="width: 100%" src="https://raw.githubusercontent.com/lukasmasuch/streamlit-pydantic/main/docs/images/banner.png"/>
 
 ---
@@ -332,7 +331,7 @@ rye run format
 
 Run tests:
 
-```bash 
+```bash
 rye test
 ```
 
