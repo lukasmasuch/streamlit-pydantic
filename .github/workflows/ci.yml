@@ -5,7 +5,7 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
-
+  workflow_call:
 jobs:
   lint:
     name: lint
@@ -17,7 +17,8 @@ jobs:
       - name: Install dependencies
         run: | # abort if the lockfile changes
           rye sync
-          git diff requirements.lock
+          echo "Checking if requirements.lock has changed"
+          [[ -n $(git diff --stat requirements.lock) ]] && exit 1
       - name: Run linters
         run: rye lint
 
@@ -31,6 +32,7 @@ jobs:
       - name: Install dependencies
         run: |  # abort if the lockfile changes
             rye sync
-            git diff requirements.lock
+            echo "Checking if requirements.lock has changed"
+            [[ -n $(git diff --stat requirements.lock) ]] && exit 1
       - name: Run tests
         run: rye test

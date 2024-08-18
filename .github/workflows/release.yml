@@ -3,7 +3,13 @@ on:
   release:
     types: [published]
 jobs:
+  run-tests:
+    uses: ./.github/workflows/ci.yml
+
   publish:
+    needs:
+      - run-tests
+
     environment:
       name: release # needed for PyPI OIDC
       url: https://pypi.org/p/streamlit-pydantic
