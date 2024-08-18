@@ -21,7 +21,7 @@
   <a href="#getting-started">Getting Started</a> •
   <a href="#documentation">Documentation</a> •
   <a href="#support--feedback">Support</a> •
-  <a href="https://github.com/lukasmasuch/streamlit-pydantic/issues/new?labels=bug&template=01_bug-report.md">Report a Bug</a> •
+  <a href="https://github.com/lukasmasuch/streamlit-pydantic/issues/new?assignees=&labels=type%3Abug%2Cstatus%3Aneeds-triage&projects=&template=01_bug-report.yml">Report a Bug</a> •
   <a href="#contribution">Contribution</a> •
   <a href="https://github.com/lukasmasuch/streamlit-pydantic/releases">Changelog</a>
 </p>
