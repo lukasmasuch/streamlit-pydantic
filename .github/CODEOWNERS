@@ -5,6 +5,6 @@
 # For more details, read the following article on GitHub: https://help.github.com/articles/about-codeowners/.
 
 # These are the default owners for the whole content of this repository. The default owners are automatically added as reviewers when you open a pull request, unless different owners are specified in the file.
-pyproject.toml @LukasMasuch
-.github @LukasMasuch
-LICENSE @LukasMasuch
+pyproject.toml @lukasmasuch
+.github @lukasmasuch
+LICENSE @lukasmasuch
