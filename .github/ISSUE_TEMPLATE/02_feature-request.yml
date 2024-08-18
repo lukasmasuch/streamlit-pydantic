@@ -1,6 +1,6 @@
 name: ✨ Feature request
 description: Suggest a feature or enhancement
-labels: [type:enhancement]
+labels: [type:enhancement, "status:needs-triage"]
 body:
   - type: markdown
     attributes:

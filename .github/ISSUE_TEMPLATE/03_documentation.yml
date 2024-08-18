@@ -1,0 +1,10 @@
+name: 📝 Documentation
+description: Is there a mistake in the docs, is anything unclear or do you have a suggestion?
+labels: [type:docs, "status:needs-triage"]
+body:
+  - type: textarea
+    attributes:
+      label: Describe your request
+      description: Describe the problem or suggestion here. If you've found a mistake and you know the answer, feel free to submit a pull request straight away.
+    validations:
+      required: true
