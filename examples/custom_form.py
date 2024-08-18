@@ -15,5 +15,5 @@ with st.form(key="pydantic_form"):
     submit_button = st.form_submit_button(label="Submit")
     obj = ExampleModel(data)
 
-if data:
-    st.json(obj.model_dump())
+# if data:
+#     st.json(obj.model_dump())

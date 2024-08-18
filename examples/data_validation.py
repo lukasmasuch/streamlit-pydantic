@@ -11,9 +11,6 @@ class ExampleModel(BaseModel):
     email: EmailStr
 
 
-try:
-    data = sp.pydantic_form(key="my_form", model=ExampleModel)
-    if data:
-        st.json(data.model_dump())
-except ValidationError as ex:
-    st.error(str(ex))
+data = sp.pydantic_form(key="my_form", model=ExampleModel)
+if data:
+    st.json(data.model_dump())
