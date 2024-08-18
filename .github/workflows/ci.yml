@@ -18,6 +18,7 @@ jobs:
         run: | # abort if the lockfile changes
           rye sync
           echo "Checking if requirements.lock has changed"
+          git diff requirements.lock
           [[ -n $(git diff --stat requirements.lock) ]] && exit 1
       - name: Run linters
         run: rye lint
@@ -33,6 +34,7 @@ jobs:
         run: |  # abort if the lockfile changes
             rye sync
             echo "Checking if requirements.lock has changed"
+            git diff requirements.lock
             [[ -n $(git diff --stat requirements.lock) ]] && exit 1
       - name: Run tests
         run: rye test
