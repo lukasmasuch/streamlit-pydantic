@@ -15,12 +15,13 @@ jobs:
       - name: Install Rye
         uses: eifinger/setup-rye@v4
       - name: Install dependencies
-        run: | # abort if the lockfile changes
+        run: |
           rye sync
-          echo "Checking if requirements.lock has changed"
-          git diff requirements.lock
-          git diff --stat requirements.lock
-          # [[ -n $(git diff --stat requirements.lock) ]] && exit 1
+          if [[ -n $(git diff --stat requirements.lock) ]]; then
+            echo "requirements.lock has changed. Exiting the workflow."
+            echo "Please run 'rye sync' locally and push the updated lockfile."
+            exit 1
+          fi
       - name: Run linters
         run: rye lint
 
@@ -32,10 +33,12 @@ jobs:
       - name: Install Rye
         uses: eifinger/setup-rye@v4
       - name: Install dependencies
-        run: |  # abort if the lockfile changes
+        run: |
             rye sync
-            echo "Checking if requirements.lock has changed"
-            git diff requirements.lock
-            # [[ -n $(git diff --stat requirements.lock) ]] && exit 1
+            if [[ -n $(git diff --stat requirements.lock) ]]; then
+              echo "requirements.lock has changed. Exiting the workflow."
+              echo "Please run 'rye sync' locally and push the updated lockfile."
+              exit 1
+            fi
       - name: Run tests
         run: rye test
