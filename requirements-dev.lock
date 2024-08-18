@@ -39,7 +39,6 @@ idna==3.7
 importlib-resources==6.4.0
     # via jsonschema
     # via jsonschema-specifications
-    # via streamlit-pydantic
 iniconfig==2.0.0
     # via pytest
 jinja2==3.1.4

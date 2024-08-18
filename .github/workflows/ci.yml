@@ -15,7 +15,9 @@ jobs:
       - name: Install Rye
         uses: eifinger/setup-rye@v4
       - name: Install dependencies
-        run: rye sync
+        run: | # abort if the lockfile changes
+          rye sync
+          [[ -n $(git diff --stat requirements.lock) ]] && exit 1
       - name: Run linters
         run: rye lint
 
@@ -27,6 +29,8 @@ jobs:
       - name: Install Rye
         uses: eifinger/setup-rye@v4
       - name: Install dependencies
-        run: rye sync
+        run: |  # abort if the lockfile changes
+            rye sync
+            [[ -n $(git diff --stat requirements.lock) ]] && exit 1
       - name: Run tests
         run: rye test
