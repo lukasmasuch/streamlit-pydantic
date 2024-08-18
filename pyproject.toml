@@ -11,7 +11,7 @@ authors = [{ name = "Lukas Masuch", email = "lukas.masuch@gmail.com" }]
 requires-python = ">= 3.8"
 dependencies = [
     "streamlit>=1.30.0",
-    "pydantic>=2.0",
+    "pydantic[email]>=2.0",
     "pydantic-settings>=2.0",
     "pydantic-extra-types>=2.6.0",
 ]

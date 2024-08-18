@@ -29,11 +29,16 @@ click==8.1.7 ; python_version < '3.10' or python_version >= '3.13' or (python_ve
     # via streamlit
 colorama==0.4.6 ; platform_system == 'Windows' and (python_version < '3.10' or python_version >= '3.13' or (python_version < '3.13' and python_version >= '3.10'))
     # via click
+dnspython==2.6.1 ; python_version < '3.10' or python_version >= '3.13' or (python_version < '3.13' and python_version >= '3.10')
+    # via email-validator
+email-validator==2.2.0 ; python_version < '3.10' or python_version >= '3.13' or (python_version < '3.13' and python_version >= '3.10')
+    # via pydantic
 gitdb==4.0.11 ; python_version < '3.10' or python_version >= '3.13' or (python_version < '3.13' and python_version >= '3.10')
     # via gitpython
 gitpython==3.1.43 ; python_version < '3.10' or python_version >= '3.13' or (python_version < '3.13' and python_version >= '3.10')
     # via streamlit
 idna==3.7 ; python_version < '3.10' or python_version >= '3.13' or (python_version < '3.13' and python_version >= '3.10')
+    # via email-validator
     # via requests
 importlib-resources==6.4.3 ; python_version < '3.9' and (python_version < '3.10' or python_version >= '3.13' or (python_version < '3.13' and python_version >= '3.10'))
     # via jsonschema
