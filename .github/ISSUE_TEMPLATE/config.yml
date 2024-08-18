@@ -1,1 +1,8 @@
 blank_issues_enabled: true
+contact_links:
+  - name: 🧑‍💻 Usage Problem
+    url: https://github.com/lukasmasuch/streamlit-pydantic/discussions/new?category=q-a
+    about: Do you have problems with usage and none of the suggestions in the docs helped?
+  - name: ❓ Anything else?
+    url: https://github.com/lukasmasuch/streamlit-pydantic/discussions
+    about: Do you have any other question?
