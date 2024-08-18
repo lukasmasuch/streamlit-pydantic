@@ -60,6 +60,7 @@ Changelog = "https://github.com/lukasmasuch/streamlit-pydantic/releases"
 
 [tool.rye]
 managed = true
+universal = true # # Generate lockfile valid on all platforms
 dev-dependencies = ["pytest", "mypy", "ruff", "types-dataclasses", "lazydocs"]
 
 [tool.hatch.metadata]

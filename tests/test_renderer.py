@@ -7,4 +7,4 @@ def test_renderer() -> None:
     class TestModel(BaseModel):
         name: str
 
-    sp.pydantic_form(TestModel)
+    sp.pydantic_form("my_key", TestModel)
