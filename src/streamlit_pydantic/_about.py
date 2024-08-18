@@ -1,5 +1,5 @@
-"""Information about this library. This file will automatically changed."""
+"""Information about this library."""
 
-__version__ = "0.7.1"
-# __author__
-# __email__
+from importlib.metadata import version
+
+__version__ = version("streamlit-pydantic")
