@@ -14,7 +14,6 @@
     <a href="https://github.com/lukasmasuch/streamlit-pydantic/blob/main/LICENSE" title="Project License"><img src="https://img.shields.io/badge/License-MIT-green.svg"></a>
     <a href="https://pepy.tech/project/streamlit-pydantic"><img src="https://static.pepy.tech/badge/streamlit-pydantic/month"></a>
     <a href="https://st-pydantic.streamlit.app"><img src="https://static.streamlit.io/badges/streamlit_badge_black_white.svg"></a>
-    <a href="https://twitter.com/lukasmasuch" title="Follow on Twitter"><img src="https://img.shields.io/twitter/follow/lukasmasuch.svg?style=social&label=Follow"></a>
 </p>
 
 <p align="center">
