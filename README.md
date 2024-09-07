@@ -107,7 +107,7 @@ if data:
     st.json(data.model_dump())
 ```
 
-### Date Validation
+### Data Validation
 
 ```python
 import streamlit as st
