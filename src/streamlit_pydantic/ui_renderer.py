@@ -17,6 +17,9 @@ from pydantic_extra_types.color import Color
 
 from streamlit_pydantic import schema_utils
 
+from .annotations import Expander
+
+
 _OVERWRITE_STREAMLIT_KWARGS_PREFIX = "st_kwargs_"
 
 
@@ -168,6 +171,10 @@ class InputUI:
 
             property = self._schema_properties[property_key]
 
+            expander = Expander in self._input_class.model_fields[property_key].metadata
+
+            property["expander"] = expander
+
             if not property.get("title"):
                 # Set property key as fallback title
                 property["title"] = _name_to_title(property_key)
@@ -185,10 +192,25 @@ class InputUI:
                     if attr is not None:
                         property["instance_class"] = str(type(attr))
 
-            try:
-                value = self._render_property(streamlit_app, property_key, property)
+            def _render_prop():
+                value = self._render_property(
+                    streamlit_app, property_key, property
+                )
                 if not self._is_value_ignored(property_key, value):
                     self._store_value(property_key, value)
+            
+            try:
+                if expander and not schema_utils.is_object_list_property(
+                    property, self._schema_references
+                ):
+                    with self._streamlit_container.expander(
+                        property_key, expanded=False
+                    ):
+                        _render_prop()
+
+                else:
+                    _render_prop()
+
             except Exception:
                 pass
 
@@ -1012,7 +1034,9 @@ class InputUI:
 
         return data_dict
 
-    def _render_list_input(self, streamlit_app: Any, key: str, property: Dict) -> Any:
+    def _render_list_input(
+        self, streamlit_app: Any, key: str, property: Dict
+    ) -> Any:
         # Add title and subheader
         streamlit_app.subheader(property.get("title"))
         if property.get("description"):
@@ -1041,26 +1065,47 @@ class InputUI:
         if self._clear_button_allowed(property):
             data_list = self._render_list_clear_button(key, clear_col, data_list)
 
+        remove_inds = []
+
+        def _render_item(index, item):
+            output = self._render_list_item(
+                streamlit_app,
+                key,
+                item,
+                index,
+                property,
+            )
+            if output is not None:
+                object_list.append(output)
+
+            else:
+                remove_inds.append(index)
+
+            if is_object:
+                streamlit_app.markdown("---")
+
         if len(data_list) > 0:
             for index, item in enumerate(data_list):
-                output = self._render_list_item(
-                    streamlit_app,
-                    key,
-                    item,
-                    index,
-                    property,
-                )
-                if output is not None:
-                    object_list.append(output)
+                if "expander" in property and property["expander"]:
+                    with self._streamlit_container.expander(
+                        property["title"], expanded=False
+                    ):
+                        _render_item(index, item)
 
-                if is_object:
-                    streamlit_app.markdown("---")
+                else:
+                    _render_item(index, item)
 
             if not self._add_button_allowed(len(object_list), property):
                 add_col = add_col.empty()
 
             if not is_object:
                 streamlit_app.markdown("---")
+
+        for ind in reversed(remove_inds):
+            data_list.pop(ind)
+
+        if len(remove_inds) > 0:
+            st.rerun()
 
         return object_list
 

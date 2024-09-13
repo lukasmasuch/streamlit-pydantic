@@ -16,3 +16,5 @@ pydantic_input = st._gather_metrics("pydantic_input", _pydantic_input)
 from .ui_renderer import pydantic_output as _pydantic_output
 
 pydantic_output = st._gather_metrics("pydantic_output", _pydantic_output)
+
+from .annotations import Expander
