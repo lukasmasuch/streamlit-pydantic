@@ -754,25 +754,20 @@ class InputUI:
                 property["exclusiveMaximum"] - streamlit_kwargs["step"]
             )
 
-        if self._session_state.get(streamlit_kwargs["key"]) is None:
-            if property.get("init_value") is not None:
-                streamlit_kwargs["value"] = number_transform(property["init_value"])
-            elif property.get("default") is not None:
-                streamlit_kwargs["value"] = number_transform(property["default"])  # type: ignore
-            else:
-                if "min_value" in streamlit_kwargs:
-                    streamlit_kwargs["value"] = streamlit_kwargs["min_value"]
-                elif number_transform == int:
-                    streamlit_kwargs["value"] = 0
-                else:
-                    # Set default value to step
-                    streamlit_kwargs["value"] = number_transform(
-                        streamlit_kwargs["step"]
-                    )
+        if property.get("init_value") is not None:
+            streamlit_kwargs["value"] = number_transform(property["init_value"])
+        elif property.get("default") is not None:
+            streamlit_kwargs["value"] = number_transform(property["default"])  # type: ignore
         else:
-            streamlit_kwargs["value"] = number_transform(
-                self._session_state[streamlit_kwargs["key"]]
-            )
+            if "min_value" in streamlit_kwargs:
+                streamlit_kwargs["value"] = streamlit_kwargs["min_value"]
+            elif number_transform == int:
+                streamlit_kwargs["value"] = 0
+            else:
+                # Set default value to step
+                streamlit_kwargs["value"] = number_transform(
+                    streamlit_kwargs["step"]
+                )
 
         if "min_value" in streamlit_kwargs and "max_value" in streamlit_kwargs:
             # TODO: Only if less than X steps
