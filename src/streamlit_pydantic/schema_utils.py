@@ -175,14 +175,21 @@ def is_property_list(property: Dict) -> bool:
         return False
 
 
-def is_object_list_property(property: Dict, references: Dict) -> bool:
+def is_object_list_property(property: Dict, references: Dict, key:str, schema_ref) -> bool:
     if property.get("type") != "array":
         return False
 
     try:
-        object_reference = resolve_reference(property["items"]["$ref"], references)
-        if object_reference["type"] != "object":
+        if property["items"].get("$ref") is not None:
+            object_reference = resolve_reference(property["items"]["$ref"], references)
+        else:
+            object_reference = property["items"]
+
+        if object_reference["type"] == "string":
+            return True
+        elif object_reference["type"] != "object":
             return False
-        return "properties" in object_reference
+        else:
+            return "properties" in object_reference
     except Exception:
         return False

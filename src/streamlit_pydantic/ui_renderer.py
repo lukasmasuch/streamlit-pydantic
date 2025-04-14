@@ -15,7 +15,7 @@ from pydantic import BaseModel, TypeAdapter, ValidationError
 from pydantic import dataclasses as pydantic_dataclasses
 from pydantic_extra_types.color import Color
 
-from streamlit_pydantic import schema_utils
+from . import schema_utils
 
 _OVERWRITE_STREAMLIT_KWARGS_PREFIX = "st_kwargs_"
 
@@ -131,7 +131,7 @@ class InputUI:
         self._schema_references = self._input_schema.get("$defs", {})
         self._schema_required = self._input_schema.get("required", {})
 
-    def render_ui(self) -> Dict:
+    def render_ui(self, key_in_expander:bool=False) -> Dict:
         if _has_input_ui_renderer(self._input_class):
             # The input model has a rendering function
             # The rendering also returns the current state of input data
@@ -157,7 +157,11 @@ class InputUI:
             instance_dict_by_alias = None
 
         for property_key in self._schema_properties.keys():
-            streamlit_app = self._streamlit_container
+            if key_in_expander:
+                title = self._schema_properties[property_key].get("description")
+                streamlit_app = self._streamlit_container.expander(title, expanded=False)
+            else:
+                streamlit_app = self._streamlit_container
             if property_key not in self._schema_required:
                 if self._group_optional_fields == "sidebar":
                     streamlit_app = self._streamlit_container.sidebar
@@ -451,6 +455,8 @@ class InputUI:
             # TODO: also use example for other property types
             # Use example as value if it is provided
             streamlit_kwargs["value"] = property.get("example")
+        else:
+            streamlit_kwargs["value"] = property.get("default")
 
         if property.get("maxLength") is not None:
             streamlit_kwargs["max_chars"] = property.get("maxLength")
@@ -466,7 +472,10 @@ class InputUI:
             # Use text input for most situations
             if property.get("writeOnly"):
                 streamlit_kwargs["type"] = "password"
-            return streamlit_app.text_input(**{**streamlit_kwargs, **overwrite_kwargs})
+            if streamlit_kwargs.get("value") is None:
+                streamlit_kwargs["value"] = ''
+            value = streamlit_app.text_input(**{**streamlit_kwargs, **overwrite_kwargs})
+            return value
 
     def _render_single_color_input(
         self, streamlit_app: Any, key: str, property: Dict
@@ -798,7 +807,7 @@ class InputUI:
             if property.get("default"):
                 new_property["default"] = property["default"].get(property_key)
 
-            new_property["readOnly"] = property.get("readOnly", False)
+            new_property["readOnly"] = new_property.get("readOnly", False)
 
             value = self._render_property(streamlit_app, full_key, new_property)
             if not self._is_value_ignored(property_key, value):
@@ -1065,6 +1074,8 @@ class InputUI:
         return object_list
 
     def _render_property(self, streamlit_app: Any, key: str, property: Dict) -> Any:
+        # filter the case of optional and nullable
+        property = filter_nullable(property)
         if schema_utils.is_single_enum_property(property, self._schema_references):
             return self._render_single_enum_input(streamlit_app, key, property)
 
@@ -1098,7 +1109,7 @@ class InputUI:
         if schema_utils.is_single_object(property, self._schema_references):
             return self._render_single_object_input(streamlit_app, key, property)
 
-        if schema_utils.is_object_list_property(property, self._schema_references):
+        if schema_utils.is_object_list_property(property, self._schema_references, key, self._schema_properties):
             return self._render_list_input(streamlit_app, key, property)
 
         if schema_utils.is_property_list(property):
@@ -1109,7 +1120,6 @@ class InputUI:
 
         if schema_utils.is_union_property(property):
             return self._render_union_property(streamlit_app, key, property)
-
         streamlit_app.warning(
             "The type of the following property is currently not supported: "
             + str(property.get("title"))
@@ -1316,6 +1326,25 @@ class OutputUI:
             # TODO Fallback to
             # streamlit.json(jsonable_encoder(output_data))
 
+def filter_nullable(property: Dict) -> Dict:
+    # if it is optional and nullable, it may be
+    # - {'anyOf': [{'type': '<type>'}, {'type': 'null'}]
+    # - {'anyOf': [{'$ref': '<ref>'}, {'type': 'null'}]
+    # we want to remove the "null" type
+    union_prop = property.get("oneOf", property.get("anyOf"))
+    if union_prop is not None:
+        # Remove the null type, while keeping the `$ref` and other types
+        where = [i for i,d in enumerate(union_prop) if d.get('type') == "null"]
+        where.reverse()
+        for i in where:
+            del union_prop[i]
+        if len(union_prop) == 1: # it is fine, we wrap the type to the original object
+            for key in union_prop[0]:
+                property[key] = union_prop[0][key]
+
+            del property["anyOf"] # now we can delete the key
+
+    return property
 
 def pydantic_input(
     key: str,
@@ -1323,6 +1352,9 @@ def pydantic_input(
     group_optional_fields: GroupOptionalFieldsStrategy = "no",  # type: ignore
     lowercase_labels: bool = False,
     ignore_empty_values: bool = False,
+    streamlit_container: Any = st,
+    key_in_expander: bool = False
+
 ) -> Dict:
     """Auto-generates input UI elements for a selected Pydantic class.
 
@@ -1333,6 +1365,8 @@ def pydantic_input(
             If `expander`,  optional input elements will be rendered inside an expander element. Defaults to `no`.
         lowercase_labels (bool): If `True`, all input element labels will be lowercased. Defaults to `False`.
         ignore_empty_values (bool): If `True`, empty values for strings and numbers will not be stored in the session state. Defaults to `False`.
+        streamlit_container (Any): The Streamlit container to render the UI elements. Defaults to `st`.
+        key_in_expander (bool): If `True`, the key will be used as the label for the expander. Defaults to `False`.
 
     Returns:
         Dict: A dictionary with the current state of the input data.
@@ -1341,10 +1375,11 @@ def pydantic_input(
         key,
         model,
         group_optional_fields=group_optional_fields,
+        streamlit_container= streamlit_container,
         lowercase_labels=lowercase_labels,
         ignore_empty_values=ignore_empty_values,
         return_model=False,
-    ).render_ui()
+    ).render_ui(key_in_expander=key_in_expander)
 
 
 def pydantic_output(output_data: Any) -> None:
@@ -1369,6 +1404,7 @@ def pydantic_form(
     group_optional_fields: GroupOptionalFieldsStrategy = "no",  # type: ignore
     lowercase_labels: bool = False,
     ignore_empty_values: bool = False,
+    key_in_expander: bool = False
 ) -> Optional[T]:
     """Auto-generates a Streamlit form based on the given (Pydantic-based) input class.
 
@@ -1381,6 +1417,7 @@ def pydantic_form(
             If `expander`,  optional input elements will be rendered inside an expander element. Defaults to `no`.
         lowercase_labels (bool): If `True`, all input element labels will be lowercased. Defaults to `False`.
         ignore_empty_values (bool): If `True`, empty values for strings and numbers will not be stored in the session state. Defaults to `False`.
+        key_in_expander (bool): If `True`, the key will be used as the label for the expander. Defaults to `False`.
 
     Returns:
         Optional[BaseModel]: An instance of the given input class,
@@ -1395,7 +1432,7 @@ def pydantic_form(
             lowercase_labels=lowercase_labels,
             ignore_empty_values=ignore_empty_values,
             return_model=True,
-        ).render_ui()
+        ).render_ui(key_in_expander=key_in_expander)
 
         if st.form_submit_button(label=submit_label):
             return input_state  # type: ignore
