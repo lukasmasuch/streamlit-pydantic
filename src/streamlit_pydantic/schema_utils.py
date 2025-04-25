@@ -9,6 +9,25 @@ from typing import Dict, List
 def resolve_reference(reference: str, references: Dict) -> Dict:
     return references[reference.split("/")[-1]]
 
+def filter_nullable(property: Dict) -> Dict:
+    # if it is optional and nullable, it may be
+    # - {'anyOf': [{'type': '<type>'}, {'type': 'null'}]
+    # - {'anyOf': [{'$ref': '<ref>'}, {'type': 'null'}]
+    # we want to remove the "null" type
+    union_prop = property.get("oneOf", property.get("anyOf"))
+    if union_prop is not None:
+        # Remove the null type, while keeping the `$ref` and other types
+        where = [i for i,d in enumerate(union_prop) if d.get('type') == "null"]
+        where.reverse()
+        for i in where:
+            del union_prop[i]
+        if len(union_prop) == 1: # it is fine, we wrap the type to the original object
+            for key in union_prop[0]:
+                property[key] = union_prop[0][key]
+
+            del property["anyOf"] # now we can delete the key
+
+    return property
 
 def get_single_reference_item(property: Dict, references: Dict) -> Dict:
     # Ref can either be directly in the properties or the first element of allOf
